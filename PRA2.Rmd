@@ -30,58 +30,73 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Descripció del dataset
 
-> Durant els últims anys el mercat immobiliari andorrà ha observat un augment notable en la demanda d\'habitatges, tant de compra com de lloguer, degut al creixent interès de residents estrangers pel país.
-> La demanda és tal que s\'ha superat l\'oferta disponible, donat lloc a un mercat immobiliari molt competitiu amb preus constantment a l\'alça; convertint l\'accés a l\'habitatge en un problema de dimensions cada vegada majors.
-> Moltes persones, tant de nacionalitat andorrana com potencials nous residents, s\'han vist obligats a buscar alternatives que sovint impliquen buscar un habitatge a localitats properes però fora del país, com per exemple La Seu d\'Urgell.
+> Durant els últims anys el mercat immobiliari andorrà ha observat un augment notable en la demanda d'habitatges, tant de compra com de lloguer, degut al creixent interès de residents estrangers pel país.
+> La demanda és tal que s'ha superat l'oferta disponible, donat lloc a un mercat immobiliari molt competitiu amb preus constantment a l'alça; convertint l'accés a l'habitatge en un problema de dimensions cada vegada majors.
+> Moltes persones, tant de nacionalitat andorrana com potencials nous residents, s'han vist obligats a buscar alternatives que sovint impliquen buscar un habitatge a localitats properes però fora del país, com per exemple La Seu d'Urgell.
 >
-> Per aquest motiu hem considerat que disposar de dades detallades del mercat immobiliari andorrà, tant de venta com de lloguer, pot resultar molt útil per determinar, entre d\'altres, els factors que influeixen en els preus de les propietats, la distribució geogràfica d\'aquestes, quines parròquies experimenten un major creixement i quines han experimentat un major increment en els preus\...
+> Per aquest motiu hem considerat que disposar de dades detallades del mercat immobiliari andorrà, tant de venta com de lloguer, pot resultar molt útil per determinar, entre d'altres, els factors que influeixen en els preus de les propietats, la distribució geogràfica d'aquestes, quines parròquies experimenten un major creixement i quines han experimentat un major increment en els preus\...
 >
-> Un dels primers objectius de l\'anàlisi de les dades obtingudes és determinar la situació actual de la oferta i la demanda, i per tant, de la disponibilitat d\'immobles.
-> A part d\'un primer estudi generalitzat, també es pot determinar la distribució d\'oferta per parròquies, per tal d\'observar si la situació és similar a totes les parròquies o hi ha més oferta i/o demanda en funció de la localització dels immobles.
-> L\'estudi de la distribució de la oferta també es pot realitzar en funció de la tipologia de la transacció, és a dir, si la propietat és de lloguer o està en venta.
-> Aquest estudi pot complementar-se tenint en compte les estadístiques publicades pel Departament d\'Estadística d\'Andorra sobre el nombre d\'edificis per parròquia i tipus o la població registrada per parròquia.
+> Un dels primers objectius de l'anàlisi de les dades obtingudes és determinar la situació actual de la oferta i la demanda, i per tant, de la disponibilitat d'immobles.
+> A part d'un primer estudi generalitzat, també es pot determinar la distribució d'oferta per parròquies, per tal d'observar si la situació és similar a totes les parròquies o hi ha més oferta i/o demanda en funció de la localització dels immobles.
+> L'estudi de la distribució de la oferta també es pot realitzar en funció de la tipologia de la transacció, és a dir, si la propietat és de lloguer o està en venta.
+> Aquest estudi pot complementar-se tenint en compte les estadístiques publicades pel Departament d'Estadística d'Andorra sobre el nombre d'edificis per parròquia i tipus o la població registrada per parròquia.
 >
-> Una altra dimensió rellevant que volem explorar és la distribució de preus en funció de la ubicació de l\'immoble, així com de les característiques d\'aquest (nombre d\'habitacions, superfície, garatge\...), determinant quin pes pot arribar a tenir cada característica a l\'hora d\'establir els preus.
-> Un cop s\'hagi obtingut aquesta informació, es pot comparar amb els ingressos mitjans o medians per unitat de consum i determinar així quin percentatge d\'aquests pot representar el lloguer d\'un immoble.
+> Una altra dimensió rellevant que volem explorar és la distribució de preus en funció de la ubicació de l'immoble, així com de les característiques d'aquest (nombre d'habitacions, superfície, garatge\...), determinant quin pes pot arribar a tenir cada característica a l'hora d'establir els preus.
+> Un cop s'hagi obtingut aquesta informació, es pot comparar amb els ingressos mitjans o medians per unitat de consum i determinar així quin percentatge d'aquests pot representar el lloguer d'un immoble.
 >
-> Per dur a terme aquest estudi s\'ha recopilat un conjunt de dades de propietats per zona geogràfica, tipus d'habitatge i altres característiques específiques del portal immobiliari pisos.ad a data de 9 de novembre.
+> Per dur a terme aquest estudi s'ha recopilat un conjunt de dades de propietats per zona geogràfica, tipus d'habitatge i altres característiques específiques del portal immobiliari pisos.ad a data de 9 de novembre.
 > El conjunt conté 3442 registres, per als quals es recullen 11 variables:
 >
-> \- Price: preu establert a l\'anunci.
-> En cas de tractar-se d\'una propietat de lloguer, el preu correspon al preu mensual d\'aquesta.
+> \- Price: preu establert a l'anunci.
+> En cas de tractar-se d'una propietat de lloguer, el preu correspon al preu mensual d'aquesta.
 > El format actual de la variable és el valor en format text, amb punts als milers i en €.
 >
 > \- Area: superfície de la propietat, em m2.
-> De nou, actualment es tracta d\'una variable textual composta pel valor de la superfície de la propietat i les unitats corresponents.
+> De nou, actualment es tracta d'una variable textual composta pel valor de la superfície de la propietat i les unitats corresponents.
 >
-> \- Bedrooms: nombre d\'habitacions de la propietat.
-> En cas de no tractar-se d\'un immoble, aquesta variable té com a valor \"0 Habitacions\".
+> \- Bedrooms: nombre d'habitacions de la propietat.
+> En cas de no tractar-se d'un immoble, aquesta variable té com a valor "0 Habitacions".
 >
 > \- Parking: variable categòrica binària que indica si la propietat disposa de garatge.
-> Els seus valors són \"Inclòs\" i \"No Inclòs\".
+> Els seus valors són "Inclòs" i "No Inclòs".
 >
 > \- Features: llista de característiques de la propietat.
 >
-> \- Agency: nom de l\'agència immobiliària que ha publicat l\'anunci.
+> \- Agency: nom de l'agència immobiliària que ha publicat l'anunci.
 >
-> \- Id: identificador numèric únic de l\'anunci, que es correspon amb la referència del portal.
+> \- Id: identificador numèric únic de l'anunci, que es correspon amb la referència del portal.
 >
 > \- Type: tipologia de la transacció anunciada.
-> Els possibles valors de la variable són \"venda\" i
+> Els possibles valors de la variable són "venda" i
 >
-> \"lloguer\".
+> "lloguer".
 >
 > \- Zone: parròquia on es troba ubicada la propietat.
 > Els possibles valors són "ordino", "canillo",
 >
 > "encamp", "andorra-la-vella", "sant-julia-de-loria", "escaldes-engordany" i "la-massana".
 >
-> \- URL: enllaç de l\'anunci.
+> \- URL: enllaç de l'anunci.
 >
-> \- Timestamp: data i hora de l\'extracció.
-> Degut a l\'elevada demanda, és possible que part dels anuncis (sobretot els de lloguer) deixin d\'estar publicats al portal al cap d\'uns dies i per tant no es pugui accedir de nou a la informació.
-> Per aquest motiu s\'ha considerat rellevant indicar el període al qual pertanyen les dades.
+> \- Timestamp: data i hora de l'extracció.
+> Degut a l'elevada demanda, és possible que part dels anuncis (sobretot els de lloguer) deixin d'estar publicats al portal al cap d'uns dies i per tant no es pugui accedir de nou a la informació.
+> Per aquest motiu s'ha considerat rellevant indicar el període al qual pertanyen les dades.
 >
-> El conjunt de dades pot trobar-se a[ https://doi.org/10.5281/zenodo.10112197](https://doi.org/10.5281/zenodo.10112197)
+> El conjunt de dades pot trobar-se a<https://doi.org/10.5281/zenodo.10112197>
 >
-> A part, es realitzarà un procés d\'integració per addicionar les dades necessàries provinents del Departament d\'Estadística d\'Andorra. 
+> A part, es realitzarà un procés d'integració per addicionar les dades necessàries provinents del Departament d'Estadística d'Andorra. 
+
+```{r message=FALSE, warning=FALSE}
+
+install.packages("jsonlite",repos='http://cran.us.r-project.org')
+library("jsonlite")
+ 
+hab_parroquia_taula <-jsonlite::fromJSON('https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=2802&DataIniciDades=01%2F01%2F2021%2000%3A00%3A00&DataFiDades=12%2F31%2F2021%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=173&N3=174&DV=2802&Pag=PAG_EstadistiquesDades2802173174&DivTaulaDades_2802_59639_68519-sort=A_Descripcio-asc')
+
+ingressos_medians_taula <-jsonlite::fromJSON('https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=1500&DataIniciDades=01%2F01%2F2018%2000%3A00%3A00&DataFiDades=12%2F31%2F2020%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=131&N3=132&DV=1500&PublicacionsInici.pageSize=10&PublicacionsInici.page=1&Pag=PAG_EstadistiquesDades1500131132&DivTaulaDades_1500_5093_64590-sort=A_Descripcio-asc')
+
+
+hab_parroquia_df <- as.data.frame(hab_parroquia_taula$Data)
+ingressos_medians_df <- as.data.frame(ingressos_medians_taula$Data)
+
+```
