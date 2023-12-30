@@ -82,14 +82,22 @@ knitr::opts_chunk$set(echo = TRUE)
 > Degut a l'elevada demanda, és possible que part dels anuncis (sobretot els de lloguer) deixin d'estar publicats al portal al cap d'uns dies i per tant no es pugui accedir de nou a la informació.
 > Per aquest motiu s'ha considerat rellevant indicar el període al qual pertanyen les dades.
 >
-> El conjunt de dades pot trobar-se a<https://doi.org/10.5281/zenodo.10112197>
+> El conjunt de dades pot trobar-se a <https://doi.org/10.5281/zenodo.10112197>
 >
 > A part, es realitzarà un procés d'integració per addicionar les dades necessàries provinents del Departament d'Estadística d'Andorra. 
+
+## Integració i selecció
+
+> Per tal de poder donar resposta a les qüestions plantejades anteriorment, i en concret, per tal de determinar la proporció entre l'oferta i el nombre total d'habitatges així com entre el preu dels lloguers i els ingressos medians de la població, es recopilen i s'integren les dades necessàries més recents publicades pel Departament d'Estadística d'Andorra.
 
 ```{r message=FALSE, warning=FALSE}
 
 install.packages("jsonlite",repos='http://cran.us.r-project.org')
+install.packages("dplyr",repos='http://cran.us.r-project.org')
+
 library("jsonlite")
+library("dplyr")
+
  
 hab_parroquia_taula <-jsonlite::fromJSON('https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=2802&DataIniciDades=01%2F01%2F2021%2000%3A00%3A00&DataFiDades=12%2F31%2F2021%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=173&N3=174&DV=2802&Pag=PAG_EstadistiquesDades2802173174&DivTaulaDades_2802_59639_68519-sort=A_Descripcio-asc')
 
@@ -99,4 +107,74 @@ ingressos_medians_taula <-jsonlite::fromJSON('https://sig.govern.ad/SIGDDE.Publi
 hab_parroquia_df <- as.data.frame(hab_parroquia_taula$Data)
 ingressos_medians_df <- as.data.frame(ingressos_medians_taula$Data)
 
+hab_parroquia_df <- hab_parroquia_df[, c('A_Descripcio', 'A_2021')]
+ingressos_medians_df <- ingressos_medians_df[, c('A_Descripcio', 'A_2020')]
+
+hab_parroquia_df <- hab_parroquia_df %>% rename('Informacio' = 'A_Descripcio', 'Valor' = 'A_2021')
+ingressos_medians_df <- ingressos_medians_df %>% rename('Informacio' = 'A_Descripcio', 'Valor' = 'A_2020')
+```
+
+```{r message=FALSE, warning=FALSE}
+
+preus_propietats_df <- read.csv2(file = url("https://zenodo.org/records/10112197/files/preus_propietats_andorra.csv?download=1"))
+```
+
+## Neteja de les dades
+
+> Tenint en compte que l'estudi es centra en vivendes, es descarten tots aquells registres de qualsevol altra classe, és a dir, que tinguin un total de zero habitacions.
+> Alhora, també es descarten aquells registres que no tinguin valor per qualsevol variable, exceptuant les variables "Features", per la qual s'imputarà un valor més endavant, o "Agency".
+
+```{r message=FALSE, warning=FALSE}
+
+# Es determinen els registers buits
+num_rows_missing <- sum(apply(preus_propietats_df[, !(names(preus_propietats_df) %in% c("Features", "Agency"))], 1, function(row) any(is.na(row))))
+
+print(paste("Registres amb valors buits :", num_rows_missing))
+
+preus_propietats_df <- preus_propietats_df[complete.cases(preus_propietats_df[, !(names(preus_propietats_df) %in% c("Features", "Agency"))]), ]
+
+# Es reconverteix la variable Bedrooms en una variable numèrica i es descarten els valors igual a 0
+
+preus_propietats_df$Bedrooms <- as.integer(gsub(" Habitacions", "", preus_propietats_df$Bedrooms))
+
+preus_propietats_df <- preus_propietats_df[preus_propietats_df$Bedrooms > 0, ]
+```
+
+> A continuació, es tracten les variables i s'identifiquen i gestionen els valors extrems:
+
+```{r message=FALSE, warning=FALSE}
+
+install.packages("ggplot2",repos = "http://cran.us.r-project.org")
+library(ggplot2)
+
+preus_propietats_df$Price <- gsub(" €", "", preus_propietats_df$Price)
+preus_propietats_df$Price <- as.integer(gsub("[^0-9]", "", gsub("\\.", "", preus_propietats_df$Price)))
+preus_propietats_df$Area <- as.integer(gsub(" m2", "", preus_propietats_df$Area))
+
+
+
+plot_quartiles <- function(variable) {
+  q1 <- quantile(preus_propietats_df[[variable]], 0.25, na.rm = TRUE)
+  q3 <- quantile(preus_propietats_df[[variable]], 0.75, na.rm = TRUE)
+  
+  plt <- ggplot(preus_propietats_df, aes_string(x = "Type", y = variable, fill = "Type")) +
+    geom_boxplot() +
+    labs(title = paste("Distribució de la variable", variable, "segons lloguer/venda"),
+         y = variable,
+         subtitle = paste("Q1:", q1, ", Q3:", q3)) +  
+    theme_minimal()
+  
+  print(plt)
+}
+
+for (variable in c("Price", "Area", "Bedrooms")) {
+  plot_and_print_quartiles(variable)
+}
+```
+
+> A continuació, es tracten les variables i s'identifiquen i gestionen els valors extrems:
+
+```{r message=FALSE, warning=FALSE}
+
+preus_propietats_df <- preus_propietats_df[preus_propietats_df$Area > 0, ]
 ```
