@@ -177,3 +177,54 @@ preus_propietats_df <- preus_propietats_df %>%
 preus_propietats_df <- preus_propietats_df %>%
   filter(!(Type == "venda" & Price > 20000000))
 ```
+
+## Anàlisi de les dades
+
+> Tal com s'indicava a l'inici de la pràctica, l'objectiu és determinar a grans trets l'estat actual del mercat immobiliàri andorrà.
+> Així doncs, s'ha considerat que per obtenir una visió global es poden realitzar els anàlisis següents:
+>
+> 1.  Determinar l'estat actual de l'oferta a través de la proporció entre el nombre d'habitatges en oferta i el nombre d'habitatges totals per parròquia.
+>     Per fer-ho, s'han delimitat dues zones, una considerada com la zona cèntrica, que inclou Andorra la Vella i Escaldees, i una zona no cèntrica, que inclou la resta de les parròquies.
+>     Així, es durà a terme un contrast d'hipòtesis per determinar si la proporció a la zona no cèntrica és més elevada.
+>
+> 2.  Estudiar les distribucions de preus de lloguer i venda de les dues zones definides, i comparar els valors mitjans de les dos grups mitjançant un contrast d'hipòtesi per determinar si el preu a la zona cèntrica és superior.
+>
+> 3.  Determinar la proporció dels ingressos mensuals medians nets que suposa el lloguer d'un pis en funció de la zona, i si aquesta supera el 35% recomanable.
+>
+> 4.  Desenvolupar un model de regressió lineal per obtenir el preu òptim d'una vivenda a partir de les característiques d'aquesta (superfície, nombre d'habitacions, pàrquing, zona...
+>
+> 5.  Estudiar les possibles correlacions entre les diferents característiques de les vivendes
+>
+> Abans de procedir als anàlisis, s'estudia la normalitat i homogeneïtat de la variància:
+
+```{r message=FALSE, warning=FALSE}
+
+install.packages("car",repos = "http://cran.us.r-project.org")
+library(car)
+
+preus_propietats_df$Centric <- ifelse(preus_propietats_df$Zone %in% c("andorra-la-vella", "escaldes-engordany"), 1, 0)
+
+normality_check <- function(variable) {
+cat("Shapiro-Wilk Test per la variable", variable, ":\n")
+    shapiro_test <- shapiro.test(preus_propietats_df[[variable]])
+    print(shapiro_test)
+    
+    par(mfrow = c(1, 2))  
+    
+    qqnorm(preus_propietats_df[[variable]])
+    qqline(preus_propietats_df[[variable]])
+    
+    hist(preus_propietats_df[[variable]], main = paste("Histograma de", variable), col = "lightblue", border = "black")
+    
+    par(mfrow = c(1, 1))  
+}
+
+
+for (variable in c("Price", "Area", "Bedrooms")) {
+  normality_check(variable)
+}
+
+
+```
+
+**NO TINC MOLT CLARA LA PART DE LA HOMOGENEÏTAT DE LA VARIÀNCIA**
