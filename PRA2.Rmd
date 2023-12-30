@@ -151,30 +151,29 @@ preus_propietats_df$Price <- gsub(" €", "", preus_propietats_df$Price)
 preus_propietats_df$Price <- as.integer(gsub("[^0-9]", "", gsub("\\.", "", preus_propietats_df$Price)))
 preus_propietats_df$Area <- as.integer(gsub(" m2", "", preus_propietats_df$Area))
 
-
-
-plot_quartiles <- function(variable) {
-  q1 <- quantile(preus_propietats_df[[variable]], 0.25, na.rm = TRUE)
-  q3 <- quantile(preus_propietats_df[[variable]], 0.75, na.rm = TRUE)
-  
-  plt <- ggplot(preus_propietats_df, aes_string(x = "Type", y = variable, fill = "Type")) +
+for (variable in c("Price", "Area", "Bedrooms")) {
+  plt <- ggplot(preus_propietats_df, aes(x = Type, y = .data[[variable]], fill = Type)) +
     geom_boxplot() +
     labs(title = paste("Distribució de la variable", variable, "segons lloguer/venda"),
-         y = variable,
-         subtitle = paste("Q1:", q1, ", Q3:", q3)) +  
-    theme_minimal()
-  
+         y = variable) +
+    theme_minimal() +
+    facet_wrap(~Type, scales = "free_y")
+
   print(plt)
 }
 
-for (variable in c("Price", "Area", "Bedrooms")) {
-  plot_and_print_quartiles(variable)
-}
 ```
 
-> A continuació, es tracten les variables i s'identifiquen i gestionen els valors extrems:
+> Pel que fa a la variable "Bedrooms", si bé sorprèn que algunes de les propietats arribin a tenir fins a vuit habitacions, no és un valor suficientment elevat com per considerar que es tracta d'un error, i per tant, s'ha optat per no descartar els registres.
+> De la mateixa manera, tampoc s'han descartat els registres amb àrees superiors a la resta, exceptuant el valor màxim de les propietats en venda i lloguer, ja que es troben molt per sobre fins i tot dels valors més extrems.
+> Pel que fa als preus, només es considera un valor extrem descartable el valor màxim de les propietats en venda.
+> Més endavant, en cas que es consideri adient pels diferents anàlisi, es podran realitzar les seleccions corresponents, obviant aquells registres que es consideri que distorsionen excessivament els càlculs.
 
 ```{r message=FALSE, warning=FALSE}
 
-preus_propietats_df <- preus_propietats_df[preus_propietats_df$Area > 0, ]
+preus_propietats_df <- preus_propietats_df %>%
+  filter(!(Type == "lloguer" & Area > 1000) & !(Type == "venda" & Area > 3000))
+
+preus_propietats_df <- preus_propietats_df %>%
+  filter(!(Type == "venda" & Price > 20000000))
 ```
