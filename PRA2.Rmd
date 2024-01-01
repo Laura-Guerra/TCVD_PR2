@@ -262,7 +262,7 @@ for (variable in c("Price", "Area", "Bedrooms")) {
 >-  Habitacions (Bedrooms) en Venda: Hi ha una diferència significativa en la variància (p-value = 1.169e-11), mostrant una major variabilitat en el nombre d'habitacions entre zones.
 >-  Habitacions (Bedrooms) en Lloguer: Sense diferències significatives (p-value = 0.1834), indicant una uniformitat en la distribució del nombre d'habitacions en lloguer entre zones.
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 if (!require("corrplot")) {
   install.packages("corrplot")
   library(corrplot)
@@ -271,4 +271,15 @@ if (!require("corrplot")) {
 correlation_matrix <- cor(venda_data[, c("Price", "Area", "Bedrooms", "Centric")], method = "spearman")
 corrplot(correlation_matrix, method = "color", addCoef.col = "white")
 ```
+
+> Els resultats de la correlació de Spearman en el pisos en venda mostren una forta associació entre 'Price' i 'Area' (0.917), indicant que a major àrea de la propietat, major és el preu, en general. Una associació similar es troba entre 'Price' i 'Bedrooms' (0.812), suggerint que propietats amb més habitacions tendeixen a tenir preus més alts. La correlació entre 'Price' i 'Centric' (0.320) és positiva però més moderada, indicant que hi ha una tendència a preus més alts en zones cèntriques, però no és tan forta com les relacions amb l'àrea o el nombre d'habitacions. 
+>
+> Per altra banda, en els pisos de lloguer trobem aquesta casuística:
+
+```{r message=FALSE, warning=FALSE}
+correlation_matrix <- cor(lloguer_data[, c("Price", "Area", "Bedrooms", "Centric")], method = "spearman")
+corrplot(correlation_matrix, method = "color", addCoef.col = "white")
+```
+
+> En el cas dels pisos en lloguer els resultats són similars als de pisos en venda. Els resultats de la correlació de Spearman mostren una relació forta entre 'Price' i 'Area' (0.755), indicant que els pisos més grans tendeixen a tenir lloguers més alts, cal remarcar però que aquesta correlació no és tan forta com en el cas dels pisos en venda. La correlació entre 'Price' i 'Bedrooms' (0.600) és també positiva, suggerint que propietats amb més habitacions generalment tenen lloguers més alts. La correlació entre 'Price' i 'Centric' (0.308) és positiva però més baixa, indicant una tendència a lloguers més alts en zones cèntriques, però aquesta tendència no és tan forta com la relació amb l'àrea o el nombre d'habitacions.
 
