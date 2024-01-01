@@ -283,3 +283,63 @@ corrplot(correlation_matrix, method = "color", addCoef.col = "white")
 
 > En el cas dels pisos en lloguer els resultats són similars als de pisos en venda. Els resultats de la correlació de Spearman mostren una relació forta entre 'Price' i 'Area' (0.755), indicant que els pisos més grans tendeixen a tenir lloguers més alts, cal remarcar però que aquesta correlació no és tan forta com en el cas dels pisos en venda. La correlació entre 'Price' i 'Bedrooms' (0.600) és també positiva, suggerint que propietats amb més habitacions generalment tenen lloguers més alts. La correlació entre 'Price' i 'Centric' (0.308) és positiva però més baixa, indicant una tendència a lloguers més alts en zones cèntriques, però aquesta tendència no és tan forta com la relació amb l'àrea o el nombre d'habitacions.
 
+```{r message=FALSE, warning=FALSE}
+# Obtenir els ingressos anuals per unitat de consum
+ingressos_anuals_per_unitat <- ingressos_medians_df$Valor
+
+# Calcular el lloguer mitjà anual per parròquia
+lloguer_mitja_anual_per_parroquia <- lloguer_data %>%
+  group_by(Zone) %>%
+  summarise(Lloguer_Mitja = mean(Price, na.rm = TRUE) * 12)  # Multiplicar per 12 per obtenir lloguer anual
+
+# Crear les dades per al gràfic
+dades_grafic <- merge(lloguer_mitja_anual_per_parroquia, data.frame(Zone = unique(lloguer_data$Zone), Ingressos_Anuals = ingressos_anuals_per_unitat), by = "Zone")
+
+# Crear el gràfic
+ggplot(dades_grafic, aes(x = Zone)) +
+  geom_bar(aes(y = Lloguer_Mitja, fill = "Cost Anual Lloguer"), stat = "identity") +
+  geom_hline(aes(yintercept = Ingressos_Anuals), color = "red", linetype = "dashed", size = 1) +
+  geom_text(aes(x = Inf, y = Ingressos_Anuals, label = "Ingressos Anuals"), color = "red", vjust = -0.5, hjust=1.) +
+  geom_hline(aes(yintercept = Ingressos_Anuals * 0.35), color = "darkgreen", linetype = "dashed", size = 1) +
+  geom_text(aes(x = Inf, y = Ingressos_Anuals * 0.35, label = "35% Ingressos"), color = "darkgreen", vjust = -0.5, hjust=1.) +
+  labs(title = "Lloguer Mitjà Anual vs Ingressos Medians Anuals per Unitat de Consum",
+       x = "Parròquia",
+       y = "Preu anual mig del lloguer (€)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_manual("", values = c("Cost Anual Lloguer" = "lightblue"))
+
+```
+
+```{r message=FALSE, warning=FALSE}
+# Calcular la mediana de preus anuals per parròquia
+mediana_lloguer_anual_per_parroquia <- lloguer_data %>%
+  group_by(Zone) %>%
+  summarise(Mediana_Lloguer_Anual = median(Price) * 12)
+
+# Calcular el percentatge d'habitatges per parròquia on el lloguer anual supera el 35% dels ingressos anuals
+percentatge_superior_35_per_parroquia <- lloguer_data %>%
+  group_by(Zone) %>%
+  summarise(Percentatge_Superior_35 = sum((Price * 12) > (ingressos_anuals_per_unitat * 0.35)) / n() * 100)
+
+# Calcular el nombre de salaris necessaris per cobrir el lloguer anual
+salaris_necessaris_per_parroquia <- lloguer_data %>%
+  group_by(Zone) %>%
+  summarise(Salaris_Necessaris = mean((Price * 12) / ingressos_anuals_per_unitat))
+
+# Combinar les dades en una nova taula
+taula_resultats <- dades_grafic %>%
+  select(Zone, Lloguer_Mitja) %>%
+  inner_join(mediana_lloguer_anual_per_parroquia, by = "Zone") %>%
+  inner_join(percentatge_superior_35_per_parroquia, by = "Zone") %>%
+  inner_join(salaris_necessaris_per_parroquia, by = "Zone") %>%
+  rename(Parròquia = Zone, 
+         Mitjana_Lloguer_Anuals = Lloguer_Mitja, 
+         Mediana_Lloguer_Anuals = Mediana_Lloguer_Anual,
+         Percentatge_Superior_35 = Percentatge_Superior_35, 
+         Salaris_Necessaris = Salaris_Necessaris)
+
+# Mostrar la taula de resultats
+print(taula_resultats)
+
+```
