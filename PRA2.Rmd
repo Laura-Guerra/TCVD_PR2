@@ -3,16 +3,16 @@ title: 'Tipologia i cicle de vida de les dades: PRA2'
 author: "Autors: Laura Guerra i Àlex Tort"
 date: "Desembre 2023"
 output:
+  pdf_document:
+    highlight: zenburn
+    toc: yes
+  word_document: default
   html_document:
     highlight: default
     number_sections: yes
     theme: cosmo
     toc: yes
     toc_depth: 2
-  word_document: default
-  pdf_document:
-    highlight: zenburn
-    toc: yes
 editor_options: 
   markdown: 
     wrap: sentence
@@ -311,6 +311,7 @@ ggplot(dades_grafic, aes(x = Zone)) +
 
 ```
 
+Podem fer un anàlisi per veure la relació entre el salari mig i el preu del lloguer. Segons les directrius estàndard d'habitatge i finances personals és recomanable que el cost de l'habitatge no superi el 35% dels ingressos totals. Aquesta anàlisi calcula la mediana dels preus anuals de lloguer per parròquia i determina quin percentatge de lloguers supera aquest llindar del 35% en relació als ingressos anuals per unitat de consum. També es calcula quantes vegades els ingressos anuals cobreixen aquest cost del lloguer, proporcionant una visió de la càrrega financera associada al lloguer en diferents parròquies.
 ```{r message=FALSE, warning=FALSE}
 # Calcular la mediana de preus anuals per parròquia
 mediana_lloguer_anual_per_parroquia <- lloguer_data %>%
@@ -322,13 +323,13 @@ percentatge_superior_35_per_parroquia <- lloguer_data %>%
   group_by(Zone) %>%
   summarise(Percentatge_Superior_35 = sum((Price * 12) > (ingressos_anuals_per_unitat * 0.35)) / n() * 100)
 
-# Calcular el nombre de salaris necessaris per cobrir el lloguer anual
+# Calcular el nombre de salaris recomanats necessaris per cobrir el lloguer anual
 salaris_necessaris_per_parroquia <- lloguer_data %>%
   group_by(Zone) %>%
-  summarise(Salaris_Necessaris = mean((Price * 12) / ingressos_anuals_per_unitat))
+  summarise(Salaris_Necessaris = mean((Price * 12) / (ingressos_anuals_per_unitat*0.35)))
 
 # Combinar les dades en una nova taula
-taula_resultats <- dades_grafic %>%
+dades_grafic %>%
   select(Zone, Lloguer_Mitja) %>%
   inner_join(mediana_lloguer_anual_per_parroquia, by = "Zone") %>%
   inner_join(percentatge_superior_35_per_parroquia, by = "Zone") %>%
@@ -339,7 +340,46 @@ taula_resultats <- dades_grafic %>%
          Percentatge_Superior_35 = Percentatge_Superior_35, 
          Salaris_Necessaris = Salaris_Necessaris)
 
-# Mostrar la taula de resultats
-print(taula_resultats)
-
 ```
+
+> De la taula de resultat podem extreure el següent:
+>
+>-  Andorra-la-Vella: Amb una mitjana de lloguer anual de 37,568.20€ i una mediana de 30,000€, tots els lloguers (100%) superen el 35% dels ingressos anuals per unitat de consum. Es recomanen aproximadament 4.48 salaris per pagar el lloguer, indicant una alta càrrega de lloguer.
+>
+>-  Canillo: Presenta la mitjana de lloguer més alta (53,272.94€) amb una mediana també elevada (54,000€). Tot com Andorra-la-Vella, tots els lloguers superen el 35% dels ingressos, recomanant-se 6.35 salaris, el que implica una gran pressió financera pel lloguer.
+>
+>-  Encamp: Amb una mitjana de 26,314.29€ i una mediana similar, el 85.71% dels lloguers superen el llindar del 35% dels ingressos. Es requeririen 3.14 salaris per pagar el lloguer, una pressió financera més moderada comparada amb altres zones.
+>
+>-  Escaldes-Engordany: El lloguer mitjà és de 48,704.35€, amb un 95.65% dels lloguers superant el 35% dels ingressos. Es recomanen gairebé 5.8 salaris, indicant una alta càrrega de lloguer.
+>
+>-  La Massana: Amb una mitjana de lloguer de 39,900€ i una mediana de 34,800€, tots els lloguers superen el 35% dels ingressos, recomanant-se prop de 4.75 salaris.
+>
+>-  Ordino: Presenta una situació similar amb una mitjana de lloguer de 36,400€, tots els lloguers superant el 35% dels ingressos, requerint 4.34 salaris.
+>
+>-  Sant Julià de Lòria: Amb la mitjana més baixa (21,970€) i una mediana de 20,340€, un 95.83% dels lloguers superen el 35% dels ingressos, però es requereixen només 2.62 salaris.
+>
+> En conclusió, aquestes dades mostren que el cost del lloguer a Andorra suposa una càrrega financera significativa en comparació amb els ingressos anuals per unitat de consum, especialment a Canillo i Escaldes-Engordany, on es requereixen més de cinc salaris per pagar el lloguer i tenir  una economia saludable. Això pot indicar una falta d'accessibilitat als habitatges per a moltes famílies, especialment en aquestes zones.
+>
+> Per a fer una regressió entre el preu i la resta de variables, primerament hem de convertir les features a variables dicotòmiques i podem eliminar les variables que no utilitzarem:
+
+```{r}
+if (!require("tidyr")) {
+  install.packages("tidyr")
+  library(tidyr)
+}
+
+process_data <- function(data) {
+  data %>%
+    mutate(Features = ifelse(is.na(Features) | Features == "", "NoFeature", Features)) %>%  # Substituir valors buits amb "NoFeature"
+    separate_rows(Features, sep = ", ") %>%
+    mutate(value = 1) %>%
+    pivot_wider(names_from = Features, values_from = value, values_fill = list(value = 0)) %>%
+    select(-URL, -Timestamp, -Parking, -Agency) # Eliminem columnes innecessaries
+}
+
+processed_lloguer_data <- process_data(lloguer_data)
+processed_venda_data <- process_data(venda_data)
+
+colnames(processed_lloguer_data)
+```
+## No tinc gaire clar com fer la regressió, ho hauriem de fer amb totes les variables? Hauria de passar la zona també a una variable dicotòmica o només utilitzem lo de cèntric/no cèntric? A més, aquest pas previ l'hauriem de fer aquí o val la pena fer-lo a l'inici per tenir les dades una mica més netes?
