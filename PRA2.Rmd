@@ -84,7 +84,7 @@ knitr::opts_chunk$set(echo = TRUE)
 >
 > El conjunt de dades pot trobar-se a <https://doi.org/10.5281/zenodo.10112197>
 >
-> A part, es realitzarà un procés d'integració per addicionar les dades necessàries provinents del Departament d'Estadística d'Andorra. 
+> A part, es realitzarà un procés d'integració per addicionar les dades necessàries provinents del Departament d'Estadística d'Andorra.
 
 ## Integració i selecció
 
@@ -151,6 +151,9 @@ preus_propietats_df$Price <- gsub(" €", "", preus_propietats_df$Price)
 preus_propietats_df$Price <- as.integer(gsub("[^0-9]", "", gsub("\\.", "", preus_propietats_df$Price)))
 preus_propietats_df$Area <- as.integer(gsub(" m2", "", preus_propietats_df$Area))
 
+# Eliminem valors nuls que s'hagin pogut generar:
+preus_propietats_df <- na.omit(preus_propietats_df)
+
 for (variable in c("Price", "Area", "Bedrooms")) {
   plt <- ggplot(preus_propietats_df, aes(x = Type, y = .data[[variable]], fill = Type)) +
     geom_boxplot() +
@@ -178,6 +181,7 @@ preus_propietats_df <- preus_propietats_df %>%
   filter(!(Type == "venda" & Price > 20000000))
 ```
 
+
 ## Anàlisi de les dades
 
 > Tal com s'indicava a l'inici de la pràctica, l'objectiu és determinar a grans trets l'estat actual del mercat immobiliàri andorrà.
@@ -195,6 +199,7 @@ preus_propietats_df <- preus_propietats_df %>%
 >
 > 5.  Estudiar les possibles correlacions entre les diferents característiques de les vivendes
 >
+> Per a l'anàlisi del mercat immobiliari andorrà, seleccionem grups de dades basats en característiques com la ubicació (cèntric o no cèntric), tipus de transacció (venda o lloguer), i atributs de les propietats (nombre d'habitacions i superfície). Aquesta selecció permetrà comparar diferents paràmetres del mercat, com la diferència en preus i característiques entre de les diferents propietats en venda i lloguer. 
 > Abans de procedir als anàlisis, s'estudia la normalitat i homogeneïtat de la variància:
 
 ```{r message=FALSE, warning=FALSE}
@@ -204,27 +209,66 @@ library(car)
 
 preus_propietats_df$Centric <- ifelse(preus_propietats_df$Zone %in% c("andorra-la-vella", "escaldes-engordany"), 1, 0)
 
-normality_check <- function(variable) {
-cat("Shapiro-Wilk Test per la variable", variable, ":\n")
-    shapiro_test <- shapiro.test(preus_propietats_df[[variable]])
+venda_data <- preus_propietats_df[preus_propietats_df$Type == "venda", ]
+lloguer_data <- preus_propietats_df[preus_propietats_df$Type == "lloguer", ]
+
+normality_check <- function(data, variable) {
+    shapiro_test <- shapiro.test(data[[variable]])
     print(shapiro_test)
     
     par(mfrow = c(1, 2))  
     
-    qqnorm(preus_propietats_df[[variable]])
-    qqline(preus_propietats_df[[variable]])
+    qqnorm(data[[variable]], main = paste("QQ Plot de", variable))
+    qqline(data[[variable]])
     
-    hist(preus_propietats_df[[variable]], main = paste("Histograma de", variable), col = "lightblue", border = "black")
+    hist(data[[variable]], main = paste("Histograma de", variable), xlab = paste("Valor de", variable), col = "lightblue", border = "black")
     
     par(mfrow = c(1, 1))  
 }
 
-
+# Aplicar la funció a les variables per a cada subconjunt de dades
 for (variable in c("Price", "Area", "Bedrooms")) {
-  normality_check(variable)
+    cat("\nShapiro-Wilk Test per la variable", variable, "en propietats en venda:\n")
+    normality_check(venda_data, variable)
+
+    cat("\nShapiro-Wilk Test per a la variable", variable, "en propietats en lloguer:\n")
+    normality_check(lloguer_data, variable)
 }
 
+```
+> Els resultats dels tests de Shapiro-Wilk indiquen clarament que les distribucions de les variables 'Price', 'Area' i 'Bedrooms', tant per a propietats en venda com en lloguer, no segueixen una distribució normal, ja que els valors p són extremadament baixos en tots els casos (menors de 0.05). Això implica que per aquestes variables, les dades es desvien significativament d'una distribució normal.
+>
+> A continuació farem una comprovació de la igualtat de variàncies entre les propietats cèntriques i no centriques. En aquest cas com les dades no compleixen la condició de normalitat, utilitzarem el test de Fligner-Killeen.
+
+```{r message=FALSE, warning=FALSE}
+fligner_test_per_tipus <- function(variable) {
+  cat("Fligner-Killeen Test per la variable", variable, "en propietats en venda:\n")
+  print(fligner.test(venda_data[[variable]] ~ venda_data$Centric))
+
+  cat("Fligner-Killeen Test per la variable", variable, "en propietats en lloguer:\n")
+  print(fligner.test(lloguer_data[[variable]] ~ lloguer_data$Centric))
+}
+
+for (variable in c("Price", "Area", "Bedrooms")) {
+  fligner_test_per_tipus(variable)
+}
 
 ```
+>Els resultats del test de Fligner-Killeen mostren diferents patrons en la variabilitat de les dades entre les propietats en venda i en lloguer, així com entre zones cèntriques i no cèntriques:
+>
+>-  Preu (Price) en Venda: Hi ha una variància significativament diferent entre zones (p-value = 3.733e-06), indicant que el preu varia més d'una zona a l'altra.
+>-  Preu (Price) en Lloguer: No es troben diferències significatives (p-value = 0.1181), suggerint una major uniformitat en els preus de lloguer independentment de la zona.
+>-  Àrea (Area) en Venda i Lloguer: Les variàncies no mostren diferències significatives (p-values = 0.1313 i 0.8488, respectivament), indicant una certa consistència en la mida de les propietats independentment de la zona.
+>-  Habitacions (Bedrooms) en Venda: Hi ha una diferència significativa en la variància (p-value = 1.169e-11), mostrant una major variabilitat en el nombre d'habitacions entre zones.
+>-  Habitacions (Bedrooms) en Lloguer: Sense diferències significatives (p-value = 0.1834), indicant una uniformitat en la distribució del nombre d'habitacions en lloguer entre zones.
 
-**NO TINC MOLT CLARA LA PART DE LA HOMOGENEÏTAT DE LA VARIÀNCIA**
+```{r}
+if (!require("corrplot")) {
+  install.packages("corrplot")
+  library(corrplot)
+}
+
+correlation_matrix <- cor(venda_data[, c("Price", "Area", "Bedrooms", "Centric")], method = "spearman")
+corrplot(correlation_matrix, method = "color", addCoef.col = "white")
+```
+
