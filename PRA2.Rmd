@@ -346,30 +346,30 @@ prop_by_zone$Registres <- as.numeric(prop_by_zone$Registres)
 prop_by_zone$Valor <- as.numeric(prop_by_zone$Valor)
 
 # Calcul de la raó i el valor de cada zona
-prop_by_zone$Ratio <- prop_by_zone$Registres / prop_by_zone$Valor
+prop_by_zone$Disponibles <- prop_by_zone$Registres / prop_by_zone$Valor
 # Calcula el complement fins a 1
-prop_by_zone$Complement <- 1 - prop_by_zone$Ratio
+prop_by_zone$No_disponibles <- 1 - prop_by_zone$Disponibles
 
 aux_data <- prop_by_zone %>%
-  gather(key = "Tipo", value = "Valor", Ratio, Complement)
+  gather(key = "Disponibilitat", value = "Valor", No_disponibles, Disponibles)
 
 # Crea el gràfic de barres
-ggplot(aux_data, aes(x = Zone, y = Valor, fill = Tipo)) +
+ggplot(aux_data, aes(x = Zone, y = Valor, fill = Disponibilitat)) +
   geom_bar(stat = "identity") +
   scale_fill_manual(values = c("grey", "lightblue")) +
   theme_minimal() +
   labs(title = "Proporció d'habitatges disponibles",
        x = "Zona",
-       y = "Proporció")
+       y = "Proporció") +  
+       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
 
 ```
 
-> Comentari
-
-## NO FUNCIONA?
-
-> Alhora, es preten estudiar les distribucions de preus de lloguer i venda de les dues zones definides, i
-> comparar els valors mitjans de les dos grups mitjançant un contrast d'hipòtesi per determinar si el preu a la zona cèntrica és superior.
+> Tal i com es pot observar al gràfic anterior, la proporció d'habitatges disponibles, ja sigui mitjançant la seva venda o el seu lloguer, és molt reduïda, sobretot a les parròquies més cèntriques.
+> Així doncs, es posa de manifest una de les afirmacions exposades a l'inici i que han donat lloc a l'estudi que es presenta: el mercat immobiliàri andorrà és molt reduït, i per tant també ho és l'accés a una vivenda, donant lloc a una problemàtica social patent.
+>
+> Alhora, es preten estudiar les distribucions de preus de lloguer i venda de les dues zones definides, i comparar els valors mitjans de les dos grups mitjançant un contrast d'hipòtesi per determinar si el preu a la zona cèntrica és superior.
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -499,6 +499,29 @@ dades_grafic %>%
 >
 > Per a fer una regressió entre el preu i la resta de variables, primerament hem de convertir les features a variables dicotòmiques i podem eliminar les variables que no utilitzarem:
 
-
-
 ## No tinc gaire clar com fer la regressió, ho hauriem de fer amb totes les variables? Hauria de passar la zona també a una variable dicotòmica o només utilitzem lo de cèntric/no cèntric? A més, aquest pas previ l'hauriem de fer aquí o val la pena fer-lo a l'inici per tenir les dades una mica més netes?
+
+## Conclusions
+
+> L'estudi detallat del mercat immobiliari andorrà revela una complexa realitat que es manifesta tant en la disponibilitat d\'habitatges com en els preus de venda i lloguer d\'aquests.
+>
+> Si bé es tracta d\'una tendència general, s\'ha observat que els preus de venda varien significativament
+> entre parròquies (al contrari que els de lloguer, que semblen ser més uniformes).
+> Per contra, no s\'ha observat diferències significatives pel que fa a la superfície entre les parròquies més cèntriques i les que no ho són tant; si bé la seva distribució en nombre d\'habitacions, sobretot per les propietats en venda, sí que varia significativament.
+>
+> S'HA DE CONTINUAR A PARTIR DE LES CORRELACIONS!
+
+## Generació del fitxer
+
+```{r}
+write.csv(processed_data, file = "dataset/preus_propietats_andorra_dades_finals.csv", row.names = FALSE)
+```
+
+## Taula de contribucions
+
+| Contribucions             | Signatura               |
+|---------------------------|-------------------------|
+| Investigació prèvia       | Laura Guerra, Àlex Tort |
+| Redacció de les respostes | Laura Guerra, Àlex Tort |
+| Desenvolupament del codi  | Laura Guerra, Àlex Tort |
+| Participació al vídeo     | Laura Guerra, Àlex Tort |
