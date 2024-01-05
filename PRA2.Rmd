@@ -428,8 +428,8 @@ ggplot(dades_grafic, aes(x = Zone)) +
   geom_bar(aes(y = Lloguer_Mitja, fill = "Cost Anual Lloguer"), stat = "identity") +
   geom_hline(aes(yintercept = Ingressos_Anuals), color = "red", linetype = "dashed", size = 1) +
   geom_text(aes(x = Inf, y = Ingressos_Anuals, label = "Ingressos Anuals"), color = "red", vjust = -0.5, hjust=1.) +
-  geom_hline(aes(yintercept = Ingressos_Anuals * 0.35), color = "darkgreen", linetype = "dashed", size = 1) +
-  geom_text(aes(x = Inf, y = Ingressos_Anuals * 0.35, label = "35% Ingressos"), color = "darkgreen", vjust = -0.5, hjust=1.) +
+  geom_hline(aes(yintercept = Ingressos_Anuals * 0.35), color = "darkviolet", linetype = "dashed", size = 1) +
+  geom_text(aes(x = Inf, y = Ingressos_Anuals * 0.35, label = "35% Ingressos"), color = "darkviolet", vjust = -0.5, hjust=1.) +
   labs(title = "Lloguer Mitjà Anual vs Ingressos Medians Anuals per Unitat de Consum",
        x = "Parròquia",
        y = "Preu anual mig del lloguer (€)") +
