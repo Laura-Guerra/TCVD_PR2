@@ -21,7 +21,7 @@ editor_options:
 ```{=html}
 <style type="text/css">
   body{
-  font-size: 12pt;
+  font-size: 10pt;
 }
 </style>
 ```
@@ -102,11 +102,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r message=FALSE, warning=FALSE}
 
-install.packages("jsonlite",repos='http://cran.us.r-project.org')
-install.packages("dplyr",repos='http://cran.us.r-project.org')
-
-library("jsonlite")
-library("dplyr")
+if (!require("jsonlite")) {
+  install.packages("jsonlite")
+  library(jsonlite)
+}
+if (!require("dplyr")) {
+  install.packages("dplyr")
+  library(dplyr)
+}
 
  
 hab_parroquia_taula <-jsonlite::fromJSON('https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=2802&DataIniciDades=01%2F01%2F2021%2000%3A00%3A00&DataFiDades=12%2F31%2F2021%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=173&N3=174&DV=2802&Pag=PAG_EstadistiquesDades2802173174&DivTaulaDades_2802_59639_68519-sort=A_Descripcio-asc')
@@ -135,6 +138,10 @@ preus_propietats_df <- read.csv2(file = url("https://zenodo.org/records/10112197
 > Alhora, també es descarten aquells registres que no tinguin valor per qualsevol variable, exceptuant les variables "Features", per la qual s'imputarà un valor més endavant, o "Agency".
 
 ```{r message=FALSE, warning=FALSE}
+if (!require("tidyr")) {
+  install.packages("tidyr")
+  library(tidyr)
+}
 
 # Es determinen els registers buits
 num_rows_missing <- sum(apply(preus_propietats_df[, !(names(preus_propietats_df) %in% c("Features", "Agency"))], 1, function(row) any(is.na(row))))
@@ -148,14 +155,30 @@ preus_propietats_df <- preus_propietats_df[complete.cases(preus_propietats_df[, 
 preus_propietats_df$Bedrooms <- as.integer(gsub(" Habitacions", "", preus_propietats_df$Bedrooms))
 
 preus_propietats_df <- preus_propietats_df[preus_propietats_df$Bedrooms > 0, ]
+
+# Es converteixen les "Features" a variables dicotòmiques
+
+
+process_data <- function(data) {
+  data %>%
+    mutate(Features = ifelse(is.na(Features) | Features == "", "NoFeature", Features)) %>%  # Substituir valors buits amb "NoFeature"
+    separate_rows(Features, sep = ", ") %>%
+    mutate(value = 1) %>%
+    pivot_wider(names_from = Features, values_from = value, values_fill = list(value = 0)) %>%
+    select(-Parking)
+}
+
+processed_data <- process_data(preus_propietats_df)
+
 ```
 
 > A continuació, es tracten les variables i s'identifiquen i gestionen els valors extrems:
 
 ```{r message=FALSE, warning=FALSE}
-
-install.packages("ggplot2",repos = "http://cran.us.r-project.org")
-library(ggplot2)
+if (!require("ggplot2")) {
+  install.packages("ggplot2")
+  library(ggplot2)
+}
 
 preus_propietats_df$Price <- gsub(" €", "", preus_propietats_df$Price)
 preus_propietats_df$Price <- as.integer(gsub("[^0-9]", "", gsub("\\.", "", preus_propietats_df$Price)))
@@ -212,9 +235,10 @@ preus_propietats_df <- preus_propietats_df %>%
 > Abans de procedir als anàlisis, s'estudia la normalitat i homogeneïtat de la variància:
 
 ```{r message=FALSE, warning=FALSE}
-
-install.packages("car",repos = "http://cran.us.r-project.org")
-library(car)
+if (!require("car")) {
+  install.packages("car")
+  library(car)
+}
 
 preus_propietats_df$Centric <- ifelse(preus_propietats_df$Zone %in% c("andorra-la-vella", "escaldes-engordany"), 1, 0)
 
@@ -310,6 +334,7 @@ hab_parroquia_df$Informacio <- tolower(sub(".*?\\.\\s*(.*)\\.$", "\\1", hab_parr
 zone_counts <- as.data.frame(table(preus_propietats_df$Zone))
 colnames(zone_counts) <- c("Zone", "Registres")  
 
+
 zone_counts$Mod_zone <- sapply(strsplit(as.character(zone_counts$Zone), "-"), function(x) x[1])
 
 hab_parroquia_df$Mod_zone <- sapply(strsplit(as.character(hab_parroquia_df$Informacio), " "), function(x) x[1])
@@ -320,13 +345,22 @@ prop_by_zone <- prop_by_zone[!is.na(prop_by_zone$Zone), ]
 prop_by_zone$Registres <- as.numeric(prop_by_zone$Registres)
 prop_by_zone$Valor <- as.numeric(prop_by_zone$Valor)
 
-ggplot(prop_by_zone, aes(x = Zone)) +
-  geom_bar(aes(y = Registres/Valor, fill = "Count/Valor"), stat = "identity", position = "fill") +
-  labs(title = "Proporción de Count sobre Valor por Zona",
-       y = "Proporción",
-       x = "Zona") +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+# Calcul de la raó i el valor de cada zona
+prop_by_zone$Ratio <- prop_by_zone$Registres / prop_by_zone$Valor
+# Calcula el complement fins a 1
+prop_by_zone$Complement <- 1 - prop_by_zone$Ratio
+
+aux_data <- prop_by_zone %>%
+  gather(key = "Tipo", value = "Valor", Ratio, Complement)
+
+# Crea el gràfic de barres
+ggplot(aux_data, aes(x = Zone, y = Valor, fill = Tipo)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("grey", "lightblue")) +
+  theme_minimal() +
+  labs(title = "Proporció d'habitatges disponibles",
+       x = "Zona",
+       y = "Proporció")
 
 ```
 
@@ -465,25 +499,6 @@ dades_grafic %>%
 >
 > Per a fer una regressió entre el preu i la resta de variables, primerament hem de convertir les features a variables dicotòmiques i podem eliminar les variables que no utilitzarem:
 
-```{r}
-if (!require("tidyr")) {
-  install.packages("tidyr")
-  library(tidyr)
-}
 
-process_data <- function(data) {
-  data %>%
-    mutate(Features = ifelse(is.na(Features) | Features == "", "NoFeature", Features)) %>%  # Substituir valors buits amb "NoFeature"
-    separate_rows(Features, sep = ", ") %>%
-    mutate(value = 1) %>%
-    pivot_wider(names_from = Features, values_from = value, values_fill = list(value = 0)) %>%
-    select(-URL, -Timestamp, -Parking, -Agency) # Eliminem columnes innecessaries
-}
-
-processed_lloguer_data <- process_data(lloguer_data)
-processed_venda_data <- process_data(venda_data)
-
-colnames(processed_lloguer_data)
-```
 
 ## No tinc gaire clar com fer la regressió, ho hauriem de fer amb totes les variables? Hauria de passar la zona també a una variable dicotòmica o només utilitzem lo de cèntric/no cèntric? A més, aquest pas previ l'hauriem de fer aquí o val la pena fer-lo a l'inici per tenir les dades una mica més netes?
