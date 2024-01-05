@@ -18,6 +18,16 @@ editor_options:
     wrap: sentence
 ---
 
+```{=html}
+<style type="text/css">
+  body{
+  font-size: 12pt;
+}
+</style>
+```
+
+------------------------------------------------------------------------
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -181,7 +191,6 @@ preus_propietats_df <- preus_propietats_df %>%
   filter(!(Type == "venda" & Price > 20000000))
 ```
 
-
 ## Anàlisi de les dades
 
 > Tal com s'indicava a l'inici de la pràctica, l'objectiu és determinar a grans trets l'estat actual del mercat immobiliàri andorrà.
@@ -189,7 +198,6 @@ preus_propietats_df <- preus_propietats_df %>%
 >
 > 1.  Determinar l'estat actual de l'oferta a través de la proporció entre el nombre d'habitatges en oferta i el nombre d'habitatges totals per parròquia.
 >     Per fer-ho, s'han delimitat dues zones, una considerada com la zona cèntrica, que inclou Andorra la Vella i Escaldees, i una zona no cèntrica, que inclou la resta de les parròquies.
->     Així, es durà a terme un contrast d'hipòtesis per determinar si la proporció a la zona no cèntrica és més elevada.
 >
 > 2.  Estudiar les distribucions de preus de lloguer i venda de les dues zones definides, i comparar els valors mitjans de les dos grups mitjançant un contrast d'hipòtesi per determinar si el preu a la zona cèntrica és superior.
 >
@@ -199,7 +207,8 @@ preus_propietats_df <- preus_propietats_df %>%
 >
 > 5.  Estudiar les possibles correlacions entre les diferents característiques de les vivendes
 >
-> Per a l'anàlisi del mercat immobiliari andorrà, seleccionem grups de dades basats en característiques com la ubicació (cèntric o no cèntric), tipus de transacció (venda o lloguer), i atributs de les propietats (nombre d'habitacions i superfície). Aquesta selecció permetrà comparar diferents paràmetres del mercat, com la diferència en preus i característiques entre de les diferents propietats en venda i lloguer. 
+> Per a l'anàlisi del mercat immobiliari andorrà, seleccionem grups de dades basats en característiques com la ubicació (cèntric o no cèntric), tipus de transacció (venda o lloguer), i atributs de les propietats (nombre d'habitacions i superfície).
+> Aquesta selecció permetrà comparar diferents paràmetres del mercat, com la diferència en preus i característiques entre de les diferents propietats en venda i lloguer.
 > Abans de procedir als anàlisis, s'estudia la normalitat i homogeneïtat de la variància:
 
 ```{r message=FALSE, warning=FALSE}
@@ -236,9 +245,12 @@ for (variable in c("Price", "Area", "Bedrooms")) {
 }
 
 ```
-> Els resultats dels tests de Shapiro-Wilk indiquen clarament que les distribucions de les variables 'Price', 'Area' i 'Bedrooms', tant per a propietats en venda com en lloguer, no segueixen una distribució normal, ja que els valors p són extremadament baixos en tots els casos (menors de 0.05). Això implica que per aquestes variables, les dades es desvien significativament d'una distribució normal.
+
+> Els resultats dels tests de Shapiro-Wilk indiquen clarament que les distribucions de les variables 'Price', 'Area' i 'Bedrooms', tant per a propietats en venda com en lloguer, no segueixen una distribució normal, ja que els valors p són extremadament baixos en tots els casos (menors de 0.05).
+> Això implica que per aquestes variables, les dades es desvien significativament d'una distribució normal.
 >
-> A continuació farem una comprovació de la igualtat de variàncies entre les propietats cèntriques i no centriques. En aquest cas com les dades no compleixen la condició de normalitat, utilitzarem el test de Fligner-Killeen.
+> A continuació farem una comprovació de la igualtat de variàncies entre les propietats cèntriques i no cèntriques.
+> En aquest cas com les dades no compleixen la condició de normalitat, utilitzarem el test de Fligner-Killeen.
 
 ```{r message=FALSE, warning=FALSE}
 fligner_test_per_tipus <- function(variable) {
@@ -254,13 +266,14 @@ for (variable in c("Price", "Area", "Bedrooms")) {
 }
 
 ```
->Els resultats del test de Fligner-Killeen mostren diferents patrons en la variabilitat de les dades entre les propietats en venda i en lloguer, així com entre zones cèntriques i no cèntriques:
+
+> Els resultats del test de Fligner-Killeen mostren diferents patrons en la variabilitat de les dades entre les propietats en venda i en lloguer, així com entre zones cèntriques i no cèntriques:
 >
->-  Preu (Price) en Venda: Hi ha una variància significativament diferent entre zones (p-value = 3.733e-06), indicant que el preu varia més d'una zona a l'altra.
->-  Preu (Price) en Lloguer: No es troben diferències significatives (p-value = 0.1181), suggerint una major uniformitat en els preus de lloguer independentment de la zona.
->-  Àrea (Area) en Venda i Lloguer: Les variàncies no mostren diferències significatives (p-values = 0.1313 i 0.8488, respectivament), indicant una certa consistència en la mida de les propietats independentment de la zona.
->-  Habitacions (Bedrooms) en Venda: Hi ha una diferència significativa en la variància (p-value = 1.169e-11), mostrant una major variabilitat en el nombre d'habitacions entre zones.
->-  Habitacions (Bedrooms) en Lloguer: Sense diferències significatives (p-value = 0.1834), indicant una uniformitat en la distribució del nombre d'habitacions en lloguer entre zones.
+> -   Preu (Price) en Venda: Hi ha una variància significativament diferent entre zones (p-value = 3.733e-06), indicant que el preu varia més d'una zona a l'altra.
+> -   Preu (Price) en Lloguer: No es troben diferències significatives (p-value = 0.1181), suggerint una major uniformitat en els preus de lloguer independentment de la zona.
+> -   Àrea (Area) en Venda i Lloguer: Les variàncies no mostren diferències significatives (p-values = 0.1313 i 0.8488, respectivament), indicant una certa consistència en la mida de les propietats independentment de la zona.
+> -   Habitacions (Bedrooms) en Venda: Hi ha una diferència significativa en la variància (p-value = 1.169e-11), mostrant una major variabilitat en el nombre d'habitacions entre zones.
+> -   Habitacions (Bedrooms) en Lloguer: Sense diferències significatives (p-value = 0.1834), indicant una uniformitat en la distribució del nombre d'habitacions en lloguer entre zones.
 
 ```{r message=FALSE, warning=FALSE}
 if (!require("corrplot")) {
@@ -272,7 +285,9 @@ correlation_matrix <- cor(venda_data[, c("Price", "Area", "Bedrooms", "Centric")
 corrplot(correlation_matrix, method = "color", addCoef.col = "white")
 ```
 
-> Els resultats de la correlació de Spearman en el pisos en venda mostren una forta associació entre 'Price' i 'Area' (0.917), indicant que a major àrea de la propietat, major és el preu, en general. Una associació similar es troba entre 'Price' i 'Bedrooms' (0.812), suggerint que propietats amb més habitacions tendeixen a tenir preus més alts. La correlació entre 'Price' i 'Centric' (0.320) és positiva però més moderada, indicant que hi ha una tendència a preus més alts en zones cèntriques, però no és tan forta com les relacions amb l'àrea o el nombre d'habitacions. 
+> Els resultats de la correlació de Spearman en el pisos en venda mostren una forta associació entre 'Price' i 'Area' (0.917), indicant que a major àrea de la propietat, major és el preu, en general.
+> Una associació similar es troba entre 'Price' i 'Bedrooms' (0.812), suggerint que propietats amb més habitacions tendeixen a tenir preus més alts.
+> La correlació entre 'Price' i 'Centric' (0.320) és positiva però més moderada, indicant que hi ha una tendència a preus més alts en zones cèntriques, però no és tan forta com les relacions amb l'àrea o el nombre d'habitacions.
 >
 > Per altra banda, en els pisos de lloguer trobem aquesta casuística:
 
@@ -281,7 +296,86 @@ correlation_matrix <- cor(lloguer_data[, c("Price", "Area", "Bedrooms", "Centric
 corrplot(correlation_matrix, method = "color", addCoef.col = "white")
 ```
 
-> En el cas dels pisos en lloguer els resultats són similars als de pisos en venda. Els resultats de la correlació de Spearman mostren una relació forta entre 'Price' i 'Area' (0.755), indicant que els pisos més grans tendeixen a tenir lloguers més alts, cal remarcar però que aquesta correlació no és tan forta com en el cas dels pisos en venda. La correlació entre 'Price' i 'Bedrooms' (0.600) és també positiva, suggerint que propietats amb més habitacions generalment tenen lloguers més alts. La correlació entre 'Price' i 'Centric' (0.308) és positiva però més baixa, indicant una tendència a lloguers més alts en zones cèntriques, però aquesta tendència no és tan forta com la relació amb l'àrea o el nombre d'habitacions.
+> En el cas dels pisos en lloguer els resultats són similars als de pisos en venda.
+> Els resultats de la correlació de Spearman mostren una relació forta entre 'Price' i 'Area' (0.755), indicant que els pisos més grans tendeixen a tenir lloguers més alts, cal remarcar però que aquesta correlació no és tan forta com en el cas dels pisos en venda.
+> La correlació entre 'Price' i 'Bedrooms' (0.600) és també positiva, suggerint que propietats amb més habitacions generalment tenen lloguers més alts.
+> La correlació entre 'Price' i 'Centric' (0.308) és positiva però més baixa, indicant una tendència a lloguers més alts en zones cèntriques, però aquesta tendència no és tan forta com la relació amb l'àrea o el nombre d'habitacions.
+
+> Tal com s'indicava a l'inici de l'apartat, un dels objectius de l'estudi és determinar l'estat actual de l'oferta a través de la proporció entre el nombre d'habitatges en oferta (tan de lloguer com de venda) i el nombre total d'habitatges per parròquia.
+
+```{r message=FALSE, warning=FALSE}
+
+hab_parroquia_df$Informacio <- tolower(sub(".*?\\.\\s*(.*)\\.$", "\\1", hab_parroquia_df$Informacio))
+
+zone_counts <- as.data.frame(table(preus_propietats_df$Zone))
+colnames(zone_counts) <- c("Zone", "Registres")  
+
+zone_counts$Mod_zone <- sapply(strsplit(as.character(zone_counts$Zone), "-"), function(x) x[1])
+
+hab_parroquia_df$Mod_zone <- sapply(strsplit(as.character(hab_parroquia_df$Informacio), " "), function(x) x[1])
+
+prop_by_zone <- merge(hab_parroquia_df, zone_counts, by.x = "Mod_zone", by.y = "Mod_zone", all.x = TRUE)[, c("Zone", "Registres", "Valor")]
+prop_by_zone <- prop_by_zone[!is.na(prop_by_zone$Zone), ]
+
+prop_by_zone$Registres <- as.numeric(prop_by_zone$Registres)
+prop_by_zone$Valor <- as.numeric(prop_by_zone$Valor)
+
+ggplot(prop_by_zone, aes(x = Zone)) +
+  geom_bar(aes(y = Registres/Valor, fill = "Count/Valor"), stat = "identity", position = "fill") +
+  labs(title = "Proporción de Count sobre Valor por Zona",
+       y = "Proporción",
+       x = "Zona") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+> Comentari
+
+## NO FUNCIONA?
+
+> Alhora, es preten estudiar les distribucions de preus de lloguer i venda de les dues zones definides, i
+> comparar els valors mitjans de les dos grups mitjançant un contrast d'hipòtesi per determinar si el preu a la zona cèntrica és superior.
+
+```{r message=FALSE, warning=FALSE}
+
+ggplot(venda_data[venda_data$Price < 5000000, ], aes(x = Price, fill = Zone)) +
+  geom_histogram(binwidth = 25000, position = "identity", alpha = 0.7) +
+  labs(title = "Preus de venda per parròquia",
+       x = "Preu",
+       y = "") +
+  theme_minimal()
+
+ggplot(lloguer_data, aes(x = Price, fill = Zone)) +
+  geom_histogram(binwidth = 150, position = "identity", alpha = 0.7) +
+  labs(title = "Preus de lloguer per parròquia",
+       x = "Preu",
+       y = "") +
+  theme_minimal()
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+habitatges_venda_centrics <- venda_data[venda_data$Centric == 1, ]
+habitatges_venda_no_centrics <- venda_data[venda_data$Centric == 0, ]
+t_test_result_venda <- t.test(habitatges_venda_centrics$Price, habitatges_venda_no_centrics$Price, alternative = "greater")
+
+print("El resultat del contrast d'hipòtesis per les ofertes de venda és:")
+print(t_test_result_venda)
+
+
+habitatges_lloguer_centrics <- lloguer_data[lloguer_data$Centric == 1, ]
+habitatges_lloguer_no_centrics <- lloguer_data[lloguer_data$Centric == 0, ]
+t_test_result_lloguer <- t.test(habitatges_lloguer_centrics$Price, habitatges_lloguer_no_centrics$Price, alternative = "greater")
+
+print("El resultat del contrast d'hipòtesis per les ofertes de lloguer és:")
+print(t_test_result_lloguer)
+
+
+```
+
+> Tenint en compte que els p-values obtinguts en ambdós casos són inferiors al nivell de significança, es pot rebutjar còmodament la hipòtesis nul·la i afirmar que, efectivament, els preus mitjans tant de lloguer com de venda són superiors al centre.
 
 ```{r message=FALSE, warning=FALSE}
 # Obtenir els ingressos anuals per unitat de consum
@@ -311,7 +405,11 @@ ggplot(dades_grafic, aes(x = Zone)) +
 
 ```
 
-Podem fer un anàlisi per veure la relació entre el salari mig i el preu del lloguer. Segons les directrius estàndard d'habitatge i finances personals és recomanable que el cost de l'habitatge no superi el 35% dels ingressos totals. Aquesta anàlisi calcula la mediana dels preus anuals de lloguer per parròquia i determina quin percentatge de lloguers supera aquest llindar del 35% en relació als ingressos anuals per unitat de consum. També es calcula quantes vegades els ingressos anuals cobreixen aquest cost del lloguer, proporcionant una visió de la càrrega financera associada al lloguer en diferents parròquies.
+> Podem fer un anàlisi per veure la relació entre el salari mig i el preu del lloguer.
+> Segons les directrius estàndard d'habitatge i finances personals és recomanable que el cost de l'habitatge no superi el 35% dels ingressos totals.
+> Aquesta anàlisi calcula la mediana dels preus anuals de lloguer per parròquia i determina quin percentatge de lloguers supera aquest llindar del 35% en relació als ingressos anuals per unitat de consum.
+> També es calcula quantes vegades els ingressos anuals cobreixen aquest cost del lloguer, proporcionant una visió de la càrrega financera associada al lloguer en diferents parròquies.
+
 ```{r message=FALSE, warning=FALSE}
 # Calcular la mediana de preus anuals per parròquia
 mediana_lloguer_anual_per_parroquia <- lloguer_data %>%
@@ -344,21 +442,26 @@ dades_grafic %>%
 
 > De la taula de resultat podem extreure el següent:
 >
->-  Andorra-la-Vella: Amb una mitjana de lloguer anual de 37,568.20€ i una mediana de 30,000€, tots els lloguers (100%) superen el 35% dels ingressos anuals per unitat de consum. Es recomanen aproximadament 4.48 salaris per pagar el lloguer, indicant una alta càrrega de lloguer.
+> -   Andorra-la-Vella: Amb una mitjana de lloguer anual de 37,568.20€ i una mediana de 30,000€, tots els lloguers (100%) superen el 35% dels ingressos anuals per unitat de consum.
+>     Es recomanen aproximadament 4.48 salaris per pagar el lloguer, indicant una alta càrrega de lloguer.
 >
->-  Canillo: Presenta la mitjana de lloguer més alta (53,272.94€) amb una mediana també elevada (54,000€). Tot com Andorra-la-Vella, tots els lloguers superen el 35% dels ingressos, recomanant-se 6.35 salaris, el que implica una gran pressió financera pel lloguer.
+> -   Canillo: Presenta la mitjana de lloguer més alta (53,272.94€) amb una mediana també elevada (54,000€).
+>     Tot com Andorra-la-Vella, tots els lloguers superen el 35% dels ingressos, recomanant-se 6.35 salaris, el que implica una gran pressió financera pel lloguer.
 >
->-  Encamp: Amb una mitjana de 26,314.29€ i una mediana similar, el 85.71% dels lloguers superen el llindar del 35% dels ingressos. Es requeririen 3.14 salaris per pagar el lloguer, una pressió financera més moderada comparada amb altres zones.
+> -   Encamp: Amb una mitjana de 26,314.29€ i una mediana similar, el 85.71% dels lloguers superen el llindar del 35% dels ingressos.
+>     Es requeririen 3.14 salaris per pagar el lloguer, una pressió financera més moderada comparada amb altres zones.
 >
->-  Escaldes-Engordany: El lloguer mitjà és de 48,704.35€, amb un 95.65% dels lloguers superant el 35% dels ingressos. Es recomanen gairebé 5.8 salaris, indicant una alta càrrega de lloguer.
+> -   Escaldes-Engordany: El lloguer mitjà és de 48,704.35€, amb un 95.65% dels lloguers superant el 35% dels ingressos.
+>     Es recomanen gairebé 5.8 salaris, indicant una alta càrrega de lloguer.
 >
->-  La Massana: Amb una mitjana de lloguer de 39,900€ i una mediana de 34,800€, tots els lloguers superen el 35% dels ingressos, recomanant-se prop de 4.75 salaris.
+> -   La Massana: Amb una mitjana de lloguer de 39,900€ i una mediana de 34,800€, tots els lloguers superen el 35% dels ingressos, recomanant-se prop de 4.75 salaris.
 >
->-  Ordino: Presenta una situació similar amb una mitjana de lloguer de 36,400€, tots els lloguers superant el 35% dels ingressos, requerint 4.34 salaris.
+> -   Ordino: Presenta una situació similar amb una mitjana de lloguer de 36,400€, tots els lloguers superant el 35% dels ingressos, requerint 4.34 salaris.
 >
->-  Sant Julià de Lòria: Amb la mitjana més baixa (21,970€) i una mediana de 20,340€, un 95.83% dels lloguers superen el 35% dels ingressos, però es requereixen només 2.62 salaris.
+> -   Sant Julià de Lòria: Amb la mitjana més baixa (21,970€) i una mediana de 20,340€, un 95.83% dels lloguers superen el 35% dels ingressos, però es requereixen només 2.62 salaris.
 >
-> En conclusió, aquestes dades mostren que el cost del lloguer a Andorra suposa una càrrega financera significativa en comparació amb els ingressos anuals per unitat de consum, especialment a Canillo i Escaldes-Engordany, on es requereixen més de cinc salaris per pagar el lloguer i tenir  una economia saludable. Això pot indicar una falta d'accessibilitat als habitatges per a moltes famílies, especialment en aquestes zones.
+> En conclusió, aquestes dades mostren que el cost del lloguer a Andorra suposa una càrrega financera significativa en comparació amb els ingressos anuals per unitat de consum, especialment a Canillo i Escaldes-Engordany, on es requereixen més de cinc salaris per pagar el lloguer i tenir una economia saludable.
+> Això pot indicar una falta d'accessibilitat als habitatges per a moltes famílies, especialment en aquestes zones.
 >
 > Per a fer una regressió entre el preu i la resta de variables, primerament hem de convertir les features a variables dicotòmiques i podem eliminar les variables que no utilitzarem:
 
@@ -382,4 +485,5 @@ processed_venda_data <- process_data(venda_data)
 
 colnames(processed_lloguer_data)
 ```
+
 ## No tinc gaire clar com fer la regressió, ho hauriem de fer amb totes les variables? Hauria de passar la zona també a una variable dicotòmica o només utilitzem lo de cèntric/no cèntric? A més, aquest pas previ l'hauriem de fer aquí o val la pena fer-lo a l'inici per tenir les dades una mica més netes?
