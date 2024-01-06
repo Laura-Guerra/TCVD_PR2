@@ -496,12 +496,6 @@ dades_grafic %>%
 > En conclusió, aquestes dades mostren que el cost del lloguer a Andorra suposa una càrrega financera significativa en comparació amb els ingressos anuals per unitat de consum, especialment a Canillo i Escaldes-Engordany, on es requereixen més de cinc salaris per pagar el lloguer i tenir una economia saludable.
 > Això pot indicar una falta d'accessibilitat als habitatges per a moltes famílies, especialment en aquestes zones.
 >
-> Per a fer una regressió entre el preu i la resta de variables primerament hem de convertir la :
-
-```{r}
-colnames(lloguer_data)
-```
-
 >Per a intentar comprende com característiques com l'àrea, el nombre d'habitacions, disponibilitat d'aparcament i ubicació afecten als preus dels habitatges, farem un model de regressió lineal per els pisos en venda i un altra pels pisos en lloguer. Per a fer-ho el primer pas és convertir la variable zone en una variable dicotòmica:
 
 ```{r message=FALSE, warning=FALSE}
