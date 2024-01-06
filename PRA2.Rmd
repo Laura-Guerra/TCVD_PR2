@@ -31,11 +31,11 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 # Pràctica 2 - Tipologia i cicle de vida de les dades
 
-------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------
 
 ## Descripció del dataset
 
@@ -496,9 +496,54 @@ dades_grafic %>%
 > En conclusió, aquestes dades mostren que el cost del lloguer a Andorra suposa una càrrega financera significativa en comparació amb els ingressos anuals per unitat de consum, especialment a Canillo i Escaldes-Engordany, on es requereixen més de cinc salaris per pagar el lloguer i tenir una economia saludable.
 > Això pot indicar una falta d'accessibilitat als habitatges per a moltes famílies, especialment en aquestes zones.
 >
-> Per a fer una regressió entre el preu i la resta de variables, primerament hem de convertir les features a variables dicotòmiques i podem eliminar les variables que no utilitzarem:
+> Per a fer una regressió entre el preu i la resta de variables primerament hem de convertir la :
 
-## No tinc gaire clar com fer la regressió, ho hauriem de fer amb totes les variables? Hauria de passar la zona també a una variable dicotòmica o només utilitzem lo de cèntric/no cèntric? A més, aquest pas previ l'hauriem de fer aquí o val la pena fer-lo a l'inici per tenir les dades una mica més netes?
+```{r}
+colnames(lloguer_data)
+```
+
+>Per a intentar comprende com característiques com l'àrea, el nombre d'habitacions, disponibilitat d'aparcament i ubicació afecten als preus dels habitatges, farem un model de regressió lineal per els pisos en venda i un altra pels pisos en lloguer. Per a fer-ho el primer pas és convertir la variable zone en una variable dicotòmica:
+
+```{r message=FALSE, warning=FALSE}
+realitzar_regressio <- function(df, title="") {
+    # Definir variables
+    dependent_var <- "Price"
+    independent_vars <- c("Area", "Bedrooms", "Parking", "Centric")
+
+    # Convertir la variable 'Zone' a factor
+    df$Zone <- factor(df$Zone)
+    
+    # Imprimir el título
+    if (!missing(title)) {
+        cat("Análisis per a:", title, "\n")
+    }
+
+    # Regressió
+    model <- lm(Price ~ Area + Bedrooms + Parking + Centric + Zone, data=df)
+
+    # Avaluació del model
+    model_summary <- summary(model)
+    print(model_summary)
+
+    # Diagnòstic del model
+    par(mfrow=c(1,2))
+    plot(model, which=1) # Residuals vs Fitted
+    plot(model, which=2) # Normal Q-Q
+
+    return(list(model=model, summary=model_summary))
+}
+
+resultats_lloguer <- realitzar_regressio(lloguer_data, "Lloguer")
+resultats_venda <- realitzar_regressio(venda_data, "Venda")
+
+
+```
+
+>De l'anàlisis sobre el lloguer s'observa que les variables "Area", "Bedrooms" i "Centric" mostren una significació estadística positiva en el model. Això significa que un augment en l'àrea, el nombre d'habitacions o la proximitat al centre estan associats amb increments en el preu de lloguer. La parròquia (Zone) també és significativa en el model, amb algunes zones com "Canillo" que tenen un impacte positiu significatiu en el preu. L'ajustament global del model és moderat, amb un R2 ajustat d'aproximadament 0.5291, el que indica que aproximadament el 52.91% de la variabilitat en el preu de lloguer es pot explicar pel model.
+>
+>En l'anàlisi sobre la venda s'observa que un augment en l'àrea i el nombre d'habitacions es correlaciona amb increments en el preu de venda. Algunes zones també tenen un impacte significatiu en el preu de venda. Per exemple, la zona "Ordino" i "Canillo" mostren un impacte positiu significatiu en els preus de venda. L'ajustament global del model de venda és moderat, amb un R2 ajustat d'aproximadament 0.6329, el que suggereix que aproximadament el 63.29% de la variabilitat en el preu de venda es pot explicar pel model.
+>
+>En tots dos casos s'observa que la Zona Sant Julià de Lòria conté valors NA, això podria relacionarse amb una quantitat insuficient de dades.
 
 ## Conclusions
 
@@ -509,6 +554,12 @@ dades_grafic %>%
 > Per contra, no s\'ha observat diferències significatives pel que fa a la superfície entre les parròquies més cèntriques i les que no ho són tant; si bé la seva distribució en nombre d\'habitacions, sobretot per les propietats en venda, sí que varia significativament.
 >
 > S'HA DE CONTINUAR A PARTIR DE LES CORRELACIONS!
+>
+>
+>
+>
+>
+> Els resultats de la regressió suggereixen que les variables associades a l'àrea de l'habitatge i el nombre d'habitacions són importants per predir els preus de venda i lloguer. A més, la proximitat al centre també influeix positivament en els preus de lloguer, així com que l'habitatge es trobi en la zona de Canillo. En canvi en el cas de venda, les parròquies amb més influència en el preu són Ordino i Canillo.
 
 ## Generació del fitxer
 
