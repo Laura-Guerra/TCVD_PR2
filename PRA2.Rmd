@@ -6,6 +6,7 @@ output:
   pdf_document:
     highlight: zenburn
     toc: yes
+    fig_height: 2.5 # La mitad de 5
   word_document: default
   html_document:
     highlight: default
@@ -26,17 +27,15 @@ editor_options:
 </style>
 ```
 
-------------------------------------------------------------------------
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
 
 # Pràctica 2 - Tipologia i cicle de vida de les dades
 
-------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------
 
 ## Descripció del dataset
 
