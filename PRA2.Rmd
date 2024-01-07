@@ -225,9 +225,9 @@ preus_propietats_df <- preus_propietats_df %>%
 >
 > 3.  Determinar la proporció dels ingressos mensuals medians nets que suposa el lloguer d'un pis en funció de la zona, i si aquesta supera el 35% recomanable.
 >
-> 4.  Desenvolupar un model de regressió lineal per obtenir el preu òptim d'una vivenda a partir de les característiques d'aquesta (superfície, nombre d'habitacions, pàrquing, zona...
+> 4.  Desenvolupar un model de regressió lineal per obtenir el preu òptim d'una vivenda a partir de les característiques d'aquesta (superfície, nombre d'habitacions, pàrquing, zona...).
 >
-> 5.  Estudiar les possibles correlacions entre les diferents característiques de les vivendes
+> 5.  Estudiar les possibles correlacions entre les diferents característiques dels habitatges.
 >
 > Per a l'anàlisi del mercat immobiliari andorrà, seleccionem grups de dades basats en característiques com la ubicació (cèntric o no cèntric), tipus de transacció (venda o lloguer), i atributs de les propietats (nombre d'habitacions i superfície).
 > Aquesta selecció permetrà comparar diferents paràmetres del mercat, com la diferència en preus i característiques entre de les diferents propietats en venda i lloguer.
@@ -355,12 +355,12 @@ aux_data <- prop_by_zone %>%
 # Crea el gràfic de barres
 ggplot(aux_data, aes(x = Zone, y = Valor, fill = Disponibilitat)) +
   geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("grey", "lightblue")) +
+  scale_fill_manual(values = c("lightblue", "grey")) +
   theme_minimal() +
   labs(title = "Proporció d'habitatges disponibles",
        x = "Zona",
        y = "Proporció") +  
-       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 
 
 ```
@@ -409,94 +409,53 @@ print(t_test_result_lloguer)
 ```
 
 > Tenint en compte que els p-values obtinguts en ambdós casos són inferiors al nivell de significança, es pot rebutjar còmodament la hipòtesis nul·la i afirmar que, efectivament, els preus mitjans tant de lloguer com de venda són superiors al centre.
+>
+> A continuació fem un anàlisi per a veure la relació entre el salari medià i el preu del lloguer. Segons les directrius estàndard d'habitatge i finances personals és recomanable que el cost de l'habitatge no superi el 35% dels ingressos totals. Aquesta anàlisi calcula la mediana i mitjana dels preus anuals de lloguer per parròquia i determina quin percentatge de lloguers supera aquest llindar del 35% en relació als ingressos anuals per unitat de consum.
+> També es calcula quantes vegades els ingressos anuals cobreixen aquest cost del lloguer, proporcionant una visió de la càrrega financera associada al lloguer en diferents parròquies.
 
 ```{r message=FALSE, warning=FALSE}
-# Obtenir els ingressos anuals per unitat de consum
-ingressos_anuals_per_unitat <- ingressos_medians_df$Valor
+# Preparar les dades
+ingressos_anuals <- ingressos_medians_df$Valor
+lloguer_data <- lloguer_data %>% mutate(Preu_Anual = Price * 12)
 
-# Calcular el lloguer mitjà anual per parròquia
-lloguer_mitja_anual_per_parroquia <- lloguer_data %>%
+# Calcular estadístiques per parròquia
+estadistiques_parroquia <- lloguer_data %>% 
   group_by(Zone) %>%
-  summarise(Lloguer_Mitja = mean(Price, na.rm = TRUE) * 12)  # Multiplicar per 12 per obtenir lloguer anual
+  summarise(
+    Lloguer_Mitja = mean(Preu_Anual, na.rm = TRUE),
+    Mediana_Lloguer = median(Preu_Anual, na.rm = TRUE),
+    Percentatge_Superior_35 = mean(Preu_Anual > ingressos_anuals * 0.35) * 100,
+    Salaris_Necessaris = mean(Preu_Anual / (ingressos_anuals * 0.35))
+  )
 
-# Crear les dades per al gràfic
-dades_grafic <- merge(lloguer_mitja_anual_per_parroquia, data.frame(Zone = unique(lloguer_data$Zone), Ingressos_Anuals = ingressos_anuals_per_unitat), by = "Zone")
+# Combinar les dades en una taula per visualització
+dades_combinades <- estadistiques_parroquia %>%
+  mutate(Parròquia = Zone) %>%
+  select(Parròquia, everything())
+
+# Mostrar la taula combinada
+print(dades_combinades)
 
 # Crear el gràfic
-ggplot(dades_grafic, aes(x = Zone)) +
-  geom_bar(aes(y = Lloguer_Mitja, fill = "Cost Anual Lloguer"), stat = "identity") +
-  geom_hline(aes(yintercept = Ingressos_Anuals), color = "red", linetype = "dashed", size = 1) +
-  geom_text(aes(x = Inf, y = Ingressos_Anuals, label = "Ingressos Anuals"), color = "red", vjust = -0.5, hjust=1.) +
-  geom_hline(aes(yintercept = Ingressos_Anuals * 0.35), color = "darkviolet", linetype = "dashed", size = 1) +
-  geom_text(aes(x = Inf, y = Ingressos_Anuals * 0.35, label = "35% Ingressos"), color = "darkviolet", vjust = -0.5, hjust=1.) +
+ggplot(dades_combinades, aes(x = Parròquia, y = Lloguer_Mitja, fill = "Cost Anual Lloguer")) +
+  geom_col() +
+  geom_hline(aes(yintercept = ingressos_anuals), color = "red", linetype = "dashed", size = 1) +
+  geom_text(aes(x = Inf, y = ingressos_anuals, label = "Ingressos Anuals"), color = "red", vjust = -0.5, hjust = 1) +
+  geom_hline(aes(yintercept = ingressos_anuals * 0.35), color = "darkviolet", linetype = "dashed", size = 1) +
+  geom_text(aes(x = Inf, y = ingressos_anuals * 0.35, label = "35% Ingressos"), color = "darkviolet", vjust = -0.5, hjust = 1) +
   labs(title = "Lloguer Mitjà Anual vs Ingressos Medians Anuals per Unitat de Consum",
        x = "Parròquia",
        y = "Preu anual mig del lloguer (€)") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  scale_fill_manual("", values = c("Cost Anual Lloguer" = "lightblue"))
-
+  scale_fill_manual(values = c("Cost Anual Lloguer" = "lightblue"))
 ```
 
-> Podem fer un anàlisi per veure la relació entre el salari mig i el preu del lloguer.
-> Segons les directrius estàndard d'habitatge i finances personals és recomanable que el cost de l'habitatge no superi el 35% dels ingressos totals.
-> Aquesta anàlisi calcula la mediana dels preus anuals de lloguer per parròquia i determina quin percentatge de lloguers supera aquest llindar del 35% en relació als ingressos anuals per unitat de consum.
-> També es calcula quantes vegades els ingressos anuals cobreixen aquest cost del lloguer, proporcionant una visió de la càrrega financera associada al lloguer en diferents parròquies.
-
-```{r message=FALSE, warning=FALSE}
-# Calcular la mediana de preus anuals per parròquia
-mediana_lloguer_anual_per_parroquia <- lloguer_data %>%
-  group_by(Zone) %>%
-  summarise(Mediana_Lloguer_Anual = median(Price) * 12)
-
-# Calcular el percentatge d'habitatges per parròquia on el lloguer anual supera el 35% dels ingressos anuals
-percentatge_superior_35_per_parroquia <- lloguer_data %>%
-  group_by(Zone) %>%
-  summarise(Percentatge_Superior_35 = sum((Price * 12) > (ingressos_anuals_per_unitat * 0.35)) / n() * 100)
-
-# Calcular el nombre de salaris recomanats necessaris per cobrir el lloguer anual
-salaris_necessaris_per_parroquia <- lloguer_data %>%
-  group_by(Zone) %>%
-  summarise(Salaris_Necessaris = mean((Price * 12) / (ingressos_anuals_per_unitat*0.35)))
-
-# Combinar les dades en una nova taula
-dades_grafic %>%
-  select(Zone, Lloguer_Mitja) %>%
-  inner_join(mediana_lloguer_anual_per_parroquia, by = "Zone") %>%
-  inner_join(percentatge_superior_35_per_parroquia, by = "Zone") %>%
-  inner_join(salaris_necessaris_per_parroquia, by = "Zone") %>%
-  rename(Parròquia = Zone, 
-         Mitjana_Lloguer_Anuals = Lloguer_Mitja, 
-         Mediana_Lloguer_Anuals = Mediana_Lloguer_Anual,
-         Percentatge_Superior_35 = Percentatge_Superior_35, 
-         Salaris_Necessaris = Salaris_Necessaris)
-
-```
-
-> De la taula de resultat podem extreure el següent:
+>L'anàlisi del mercat de lloguer a Andorra mostra una càrrega financera significativa per als inquilins en totes les parròquies. A Andorra-la-Vella, la mitjana de lloguer anual és de 37,568.20€, i es requereixen aproximadament 4.48 salaris per afrontar aquest cost. Canillo té la mitjana més alta amb 53,272.94€, exigint fins a 6.35 salaris, el que indica una gran pressió financera. Encamp presenta una situació més moderada amb una mitjana de 26,314.29€ i 3.14 salaris necessaris.
 >
-> -   Andorra-la-Vella: Amb una mitjana de lloguer anual de 37,568.20€ i una mediana de 30,000€, tots els lloguers (100%) superen el 35% dels ingressos anuals per unitat de consum.
->     Es recomanen aproximadament 4.48 salaris per pagar el lloguer, indicant una alta càrrega de lloguer.
+>A Escaldes-Engordany, el lloguer mitjà és de 48,704.35€, necessitant gairebé 5.8 salaris. La Massana i Ordino mostren també una alta càrrega amb 4.75 i 4.34 salaris respectivament. Finalment, Sant Julià de Lòria té la mitjana més baixa amb 21,970€, però encara requereix 2.62 salaris.
 >
-> -   Canillo: Presenta la mitjana de lloguer més alta (53,272.94€) amb una mediana també elevada (54,000€).
->     Tot com Andorra-la-Vella, tots els lloguers superen el 35% dels ingressos, recomanant-se 6.35 salaris, el que implica una gran pressió financera pel lloguer.
->
-> -   Encamp: Amb una mitjana de 26,314.29€ i una mediana similar, el 85.71% dels lloguers superen el llindar del 35% dels ingressos.
->     Es requeririen 3.14 salaris per pagar el lloguer, una pressió financera més moderada comparada amb altres zones.
->
-> -   Escaldes-Engordany: El lloguer mitjà és de 48,704.35€, amb un 95.65% dels lloguers superant el 35% dels ingressos.
->     Es recomanen gairebé 5.8 salaris, indicant una alta càrrega de lloguer.
->
-> -   La Massana: Amb una mitjana de lloguer de 39,900€ i una mediana de 34,800€, tots els lloguers superen el 35% dels ingressos, recomanant-se prop de 4.75 salaris.
->
-> -   Ordino: Presenta una situació similar amb una mitjana de lloguer de 36,400€, tots els lloguers superant el 35% dels ingressos, requerint 4.34 salaris.
->
-> -   Sant Julià de Lòria: Amb la mitjana més baixa (21,970€) i una mediana de 20,340€, un 95.83% dels lloguers superen el 35% dels ingressos, però es requereixen només 2.62 salaris.
->
-> En conclusió, aquestes dades mostren que el cost del lloguer a Andorra suposa una càrrega financera significativa en comparació amb els ingressos anuals per unitat de consum, especialment a Canillo i Escaldes-Engordany, on es requereixen més de cinc salaris per pagar el lloguer i tenir una economia saludable.
-> Això pot indicar una falta d'accessibilitat als habitatges per a moltes famílies, especialment en aquestes zones.
->
->Per a intentar comprende com característiques com l'àrea, el nombre d'habitacions, disponibilitat d'aparcament i ubicació afecten als preus dels habitatges, farem un model de regressió lineal per els pisos en venda i un altra pels pisos en lloguer. Per a fer-ho el primer pas és convertir la variable zone en una variable dicotòmica:
+>Aquesta situació reflecteix una problemàtica d'accessibilitat als habitatges, sobretot a Canillo i Escaldes-Engordany. Per entendre millor com l'àrea, nombre d'habitacions, aparcament i ubicació afecten els preus, s'implementarà un model de regressió lineal per analitzar tant els pisos en venda com els de lloguer.
 
 ```{r message=FALSE, warning=FALSE}
 realitzar_regressio <- function(df, title="") {
@@ -529,8 +488,6 @@ realitzar_regressio <- function(df, title="") {
 
 resultats_lloguer <- realitzar_regressio(lloguer_data, "Lloguer")
 resultats_venda <- realitzar_regressio(venda_data, "Venda")
-
-
 ```
 
 >De l'anàlisis sobre el lloguer s'observa que les variables "Area", "Bedrooms" i "Centric" mostren una significació estadística positiva en el model. Això significa que un augment en l'àrea, el nombre d'habitacions o la proximitat al centre estan associats amb increments en el preu de lloguer. La parròquia (Zone) també és significativa en el model, amb algunes zones com "Canillo" que tenen un impacte positiu significatiu en el preu. L'ajustament global del model és moderat, amb un R2 ajustat d'aproximadament 0.5291, el que indica que aproximadament el 52.91% de la variabilitat en el preu de lloguer es pot explicar pel model.
@@ -541,19 +498,9 @@ resultats_venda <- realitzar_regressio(venda_data, "Venda")
 
 ## Conclusions
 
-> L'estudi detallat del mercat immobiliari andorrà revela una complexa realitat que es manifesta tant en la disponibilitat d\'habitatges com en els preus de venda i lloguer d\'aquests.
+>L'estudi detallat del mercat immobiliari andorrà revela una complexa realitat en la disponibilitat d'habitatges i els preus de venda i lloguer. S'ha observat que els preus de venda varien significativament entre parròquies, a diferència dels lloguers que són més uniformes. No obstant això, la superfície dels habitatges no mostra diferències significatives entre parròquies cèntriques i no cèntriques, tot i que la distribució en nombre d'habitacions varia, especialment en la venda.
 >
-> Si bé es tracta d\'una tendència general, s\'ha observat que els preus de venda varien significativament
-> entre parròquies (al contrari que els de lloguer, que semblen ser més uniformes).
-> Per contra, no s\'ha observat diferències significatives pel que fa a la superfície entre les parròquies més cèntriques i les que no ho són tant; si bé la seva distribució en nombre d\'habitacions, sobretot per les propietats en venda, sí que varia significativament.
->
-> S'HA DE CONTINUAR A PARTIR DE LES CORRELACIONS!
->
->
->
->
->
-> Els resultats de la regressió suggereixen que les variables associades a l'àrea de l'habitatge i el nombre d'habitacions són importants per predir els preus de venda i lloguer. A més, la proximitat al centre també influeix positivament en els preus de lloguer, així com que l'habitatge es trobi en la zona de Canillo. En canvi en el cas de venda, les parròquies amb més influència en el preu són Ordino i Canillo.
+>Les correlacions indiquen una relació forta entre 'Price' i 'Area', especialment en la venda. La ubicació cèntrica i el nombre d'habitacions també influeixen en els preus, però de manera més moderada. La proporció d'habitatges disponibles és baixa, particularment en les zones cèntriques, destacant una problemàtica social d'accés a l'habitatge. Els estudis de contrast confirmen que els preus mitjans de venda i lloguer són significativament més alts en aquestes zones, evidenciant una major demanda o preferència per aquestes localitzacions. A més, l'anàlisi de regressió subratlla la influència de factors com l'àrea, el nombre d'habitacions, i la ubicació en els preus, mentre que l'anàlisi de càrrega financera dels lloguers mostra que en algunes zones, el cost del lloguer representa una part significativa dels ingressos anuals, posant en evidencia una forta pressió financera sobre els residents. Aquestes troballes proporcionen una comprensió detallada de les dinàmiques del mercat immobiliari andorrà i les seves implicacions socioeconòmiques.
 
 ## Generació del fitxer
 
@@ -569,3 +516,6 @@ write.csv(processed_data, file = "dataset/preus_propietats_andorra_dades_finals.
 | Redacció de les respostes | Laura Guerra, Àlex Tort |
 | Desenvolupament del codi  | Laura Guerra, Àlex Tort |
 | Participació al vídeo     | Laura Guerra, Àlex Tort |
+
+## Repositori Github
+El repositori git associat a aquest projecte és https://github.com/Laura-Guerra/TCVD_PR2
