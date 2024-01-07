@@ -20,7 +20,12 @@ El dataset s'ha publicat a Zenodo amb el DOI https://doi.org/10.5281/zenodo.1011
 ## Estructura del projecte
 
 El repositori consta de les carpetes següents:
-
+* dataset: conté els datasets utilitzats al projecte.
+  * preus_propietats_andorra_dades_finals.csv: dades netes amb les que s'ha fet l'anàlisi
+  * preus_propietats_andorra.csv: dades originals obtingudes al webscraping.
+* code: conté el codi de l'analisi.
+  *  atort_lguerrari_PR2.rmd: codi del projecte
+* atort_lguerrari_PR2.pdf: informe del projecte
 
 ## Llicència
 Aquest projecte està disponible sota la Llicència Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0). 
