@@ -38,6 +38,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ------------------------------------------------------------------------
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Required libraries
 if (!require("jsonlite")) {
   install.packages("jsonlite")
   library(jsonlite)
@@ -66,7 +67,6 @@ if (!require("car")) {
   install.packages("car")
   library(car)
 }
-
 ```
 
 ## Descripció del dataset
@@ -129,13 +129,21 @@ if (!require("car")) {
 
 ## Integració i selecció
 
-> Per tal de poder donar resposta a les qüestions plantejades anteriorment, i en concret, per tal de determinar la proporció entre l'oferta i el nombre total d'habitatges així com entre el preu dels lloguers i els ingressos medians de la població, es recopilen i s'integren les dades necessàries més recents publicades pel Departament d'Estadística d'Andorra.
+> Per tal de poder donar resposta a les qüestions plantejades anteriorment, i en concret, per tal de determinar la proporció entre l'oferta i el nombre total d'habitatges així com entre el preu dels lloguers i els ingressos medians de la població, es recopilen i s'integren les dades necessàries més recents publicades pel Departament d'Estadística d'Andorra. Els enllaços de dades utilitzats són:
+>
+> - [Habitatges parròquies](https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=2802&DataIniciDades=01%2F01%2F2021%2000%3A00%3A00&DataFiDades=12%2F31%2F2021%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=173&N3=174&DV=2802&Pag=PAG_EstadistiquesDades2802173174&DivTaulaDades_2802_59639_68519-sort=A_Descripcio-asc)
+>
+> - [Ingressos medians](https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=1500&DataIniciDades=01%2F01%2F2018%2000%3A00%3A00&DataFiDades=12%2F31%2F2020%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=131&N3=132&DV=1500&PublicacionsInici.pageSize=10&PublicacionsInici.page=1&Pag=PAG_EstadistiquesDades1500131132&DivTaulaDades_1500_5093_64590-sort=A_Descripcio-asc)
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+url_habitatges_parroquies <- 'https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=2802&DataIniciDades=01%2F01%2F2021%2000%3A00%3A00&DataFiDades=12%2F31%2F2021%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=173&N3=174&DV=2802&Pag=PAG_EstadistiquesDades2802173174&DivTaulaDades_2802_59639_68519-sort=A_Descripcio-asc'
+
+url_ingressos_medians <- 'https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=1500&DataIniciDades=01%2F01%2F2018%2000%3A00%3A00&DataFiDades=12%2F31%2F2020%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=131&N3=132&DV=1500&PublicacionsInici.pageSize=10&PublicacionsInici.page=1&Pag=PAG_EstadistiquesDades1500131132&DivTaulaDades_1500_5093_64590-sort=A_Descripcio-asc'
+```
 
 ```{r message=FALSE, warning=FALSE}
-hab_parroquia_taula <-jsonlite::fromJSON('https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=2802&DataIniciDades=01%2F01%2F2021%2000%3A00%3A00&DataFiDades=12%2F31%2F2021%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=173&N3=174&DV=2802&Pag=PAG_EstadistiquesDades2802173174&DivTaulaDades_2802_59639_68519-sort=A_Descripcio-asc')
-
-ingressos_medians_taula <-jsonlite::fromJSON('https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=1500&DataIniciDades=01%2F01%2F2018%2000%3A00%3A00&DataFiDades=12%2F31%2F2020%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=131&N3=132&DV=1500&PublicacionsInici.pageSize=10&PublicacionsInici.page=1&Pag=PAG_EstadistiquesDades1500131132&DivTaulaDades_1500_5093_64590-sort=A_Descripcio-asc')
-
+hab_parroquia_taula <-jsonlite::fromJSON(url_habitatges_parroquies)
+ingressos_medians_taula <-jsonlite::fromJSON(url_ingressos_medians)
 
 hab_parroquia_df <- as.data.frame(hab_parroquia_taula$Data)
 ingressos_medians_df <- as.data.frame(ingressos_medians_taula$Data)
@@ -143,13 +151,16 @@ ingressos_medians_df <- as.data.frame(ingressos_medians_taula$Data)
 hab_parroquia_df <- hab_parroquia_df[, c('A_Descripcio', 'A_2021')]
 ingressos_medians_df <- ingressos_medians_df[, c('A_Descripcio', 'A_2020')]
 
-hab_parroquia_df <- hab_parroquia_df %>% rename('Informacio' = 'A_Descripcio', 'Valor' = 'A_2021')
-ingressos_medians_df <- ingressos_medians_df %>% rename('Informacio' = 'A_Descripcio', 'Valor' = 'A_2020')
+hab_parroquia_df <- hab_parroquia_df %>% rename('Informacio' = 'A_Descripcio',
+                                                'Valor' = 'A_2021')
+ingressos_medians_df <- ingressos_medians_df %>% rename('Informacio' = 'A_Descripcio',
+                                                        'Valor' = 'A_2020')
 ```
 
 ```{r message=FALSE, warning=FALSE}
-
-preus_propietats_df <- read.csv2(file = url("https://zenodo.org/records/10112197/files/preus_propietats_andorra.csv?download=1"))
+# Obtenim les dades del web scraping de zenodo
+zenodo_url <- "https://zenodo.org/records/10112197/files/preus_propietats_andorra.csv?download=1"
+preus_propietats_df <- read.csv2(file = url(zenodo_url))
 ```
 
 ## Neteja de les dades
@@ -159,40 +170,43 @@ preus_propietats_df <- read.csv2(file = url("https://zenodo.org/records/10112197
 
 ```{r message=FALSE, warning=FALSE}
 # Es determinen els registers buits
-num_rows_missing <- sum(apply(preus_propietats_df[, !(names(preus_propietats_df) %in% c("Features", "Agency"))], 1, function(row) any(is.na(row))))
+num_rows_missing <- sum(apply(preus_propietats_df[
+  , !(names(preus_propietats_df) %in% c("Features", "Agency"))], 1,
+  function(row) any(is.na(row))))
 
 print(paste("Registres amb valors buits :", num_rows_missing))
 
-preus_propietats_df <- preus_propietats_df[complete.cases(preus_propietats_df[, !(names(preus_propietats_df) %in% c("Features", "Agency"))]), ]
+preus_propietats_df <- preus_propietats_df[
+  complete.cases(preus_propietats_df[, !(names(preus_propietats_df) %in% 
+                                           c("Features", "Agency"))]), ]
 
-# Es reconverteix la variable Bedrooms en una variable numèrica i es descarten els valors igual a 0
-
-preus_propietats_df$Bedrooms <- as.integer(gsub(" Habitacions", "", preus_propietats_df$Bedrooms))
+# Es converteix Bedrooms en una variable numèrica i es descarten els valors igual a 0
+preus_propietats_df$Bedrooms <- as.integer(gsub(" Habitacions",
+                                                "", preus_propietats_df$Bedrooms))
 
 preus_propietats_df <- preus_propietats_df[preus_propietats_df$Bedrooms > 0, ]
 
 # Es converteixen les "Features" a variables dicotòmiques
-
-
 process_data <- function(data) {
   data %>%
-    mutate(Features = ifelse(is.na(Features) | Features == "", "NoFeature", Features)) %>%  # Substituir valors buits amb "NoFeature"
+    mutate(Features = ifelse(is.na(Features) | Features == "", "NoFeature", Features)) %>%
     separate_rows(Features, sep = ", ") %>%
     mutate(value = 1) %>%
-    pivot_wider(names_from = Features, values_from = value, values_fill = list(value = 0)) %>%
+    pivot_wider(names_from = Features, values_from = value, 
+                values_fill = list(value = 0)) %>%
     select(-Parking)
 }
 
 processed_data <- process_data(preus_propietats_df)
-
 ```
 
 > A continuació, es tracten les variables i s'identifiquen i gestionen els valors extrems:
 
 ```{r message=FALSE, warning=FALSE}
 preus_propietats_df$Price <- gsub(" €", "", preus_propietats_df$Price)
-preus_propietats_df$Price <- as.integer(gsub("[^0-9]", "", gsub("\\.", "", preus_propietats_df$Price)))
-preus_propietats_df$Area <- as.integer(gsub(" m2", "", preus_propietats_df$Area))
+preus_propietats_df$Price <- as.integer(gsub("[^0-9]", "",
+                                             gsub("\\.", "",preus_propietats_df$Price)))
+preus_propietats_df$Area <- as.integer(gsub(" m2", "",preus_propietats_df$Area))
 
 # Eliminem valors nuls que s'hagin pogut generar:
 preus_propietats_df <- na.omit(preus_propietats_df)
@@ -207,7 +221,6 @@ for (variable in c("Price", "Area", "Bedrooms")) {
 
   print(plt)
 }
-
 ```
 
 > Pel que fa a la variable "Bedrooms", si bé sorprèn que algunes de les propietats arribin a tenir fins a vuit habitacions, no és un valor suficientment elevat com per considerar que es tracta d'un error, i per tant, s'ha optat per no descartar els registres.
@@ -216,7 +229,6 @@ for (variable in c("Price", "Area", "Bedrooms")) {
 > Més endavant, en cas que es consideri adient pels diferents anàlisi, es podran realitzar les seleccions corresponents, obviant aquells registres que es consideri que distorsionen excessivament els càlculs.
 
 ```{r message=FALSE, warning=FALSE}
-
 preus_propietats_df <- preus_propietats_df %>%
   filter(!(Type == "lloguer" & Area > 1000) & !(Type == "venda" & Area > 3000))
 
@@ -245,7 +257,8 @@ preus_propietats_df <- preus_propietats_df %>%
 > Abans de procedir als anàlisis, s'estudia la normalitat i homogeneïtat de la variància:
 
 ```{r message=FALSE, warning=FALSE}
-preus_propietats_df$Centric <- ifelse(preus_propietats_df$Zone %in% c("andorra-la-vella", "escaldes-engordany"), 1, 0)
+preus_propietats_df$Centric <- ifelse(preus_propietats_df$Zone %in%
+                                        c("andorra-la-vella", "escaldes-engordany"), 1, 0)
 
 venda_data <- preus_propietats_df[preus_propietats_df$Type == "venda", ]
 lloguer_data <- preus_propietats_df[preus_propietats_df$Type == "lloguer", ]
@@ -259,7 +272,8 @@ normality_check <- function(data, variable) {
     qqnorm(data[[variable]], main = paste("QQ Plot de", variable))
     qqline(data[[variable]])
     
-    hist(data[[variable]], main = paste("Histograma de", variable), xlab = paste("Valor de", variable), col = "lightblue", border = "black")
+    hist(data[[variable]], main = paste("Histograma de", variable),
+         xlab = paste("Valor de", variable), col = "lightblue", border = "black")
     
     par(mfrow = c(1, 1))  
 }
@@ -272,7 +286,6 @@ for (variable in c("Price", "Area", "Bedrooms")) {
     cat("\nShapiro-Wilk Test per a la variable", variable, "en propietats en lloguer:\n")
     normality_check(lloguer_data, variable)
 }
-
 ```
 
 > Els resultats dels tests de Shapiro-Wilk indiquen clarament que les distribucions de les variables 'Price', 'Area' i 'Bedrooms', tant per a propietats en venda com en lloguer, no segueixen una distribució normal, ja que els valors p són extremadament baixos en tots els casos (menors de 0.05).
@@ -306,18 +319,20 @@ for (variable in c("Price", "Area", "Bedrooms")) {
 > Tal com s'indicava a l'inici de l'apartat, un dels objectius de l'estudi és determinar l'estat actual de l'oferta a través de la proporció entre el nombre d'habitatges en oferta (tan de lloguer com de venda) i el nombre total d'habitatges per parròquia.
 
 ```{r message=FALSE, warning=FALSE}
-
-hab_parroquia_df$Informacio <- tolower(sub(".*?\\.\\s*(.*)\\.$", "\\1", hab_parroquia_df$Informacio))
+hab_parroquia_df$Informacio <- tolower(sub(".*?\\.\\s*(.*)\\.$", "\\1",
+                                           hab_parroquia_df$Informacio))
 
 zone_counts <- as.data.frame(table(preus_propietats_df$Zone))
 colnames(zone_counts) <- c("Zone", "Registres")  
 
+zone_counts$Mod_zone <- sapply(strsplit(as.character(zone_counts$Zone), "-"),
+                               function(x) x[1])
 
-zone_counts$Mod_zone <- sapply(strsplit(as.character(zone_counts$Zone), "-"), function(x) x[1])
+hab_parroquia_df$Mod_zone <- sapply(strsplit(as.character(hab_parroquia_df$Informacio), 
+                                             " "),function(x) x[1])
 
-hab_parroquia_df$Mod_zone <- sapply(strsplit(as.character(hab_parroquia_df$Informacio), " "), function(x) x[1])
-
-prop_by_zone <- merge(hab_parroquia_df, zone_counts, by.x = "Mod_zone", by.y = "Mod_zone", all.x = TRUE)[, c("Zone", "Registres", "Valor")]
+prop_by_zone <- merge(hab_parroquia_df, zone_counts, by.x = "Mod_zone",
+                      by.y = "Mod_zone", all.x = TRUE)[, c("Zone", "Registres", "Valor")]
 prop_by_zone <- prop_by_zone[!is.na(prop_by_zone$Zone), ]
 
 prop_by_zone$Registres <- as.numeric(prop_by_zone$Registres)
@@ -340,8 +355,6 @@ ggplot(aux_data, aes(x = Zone, y = Valor, fill = Disponibilitat)) +
        x = "Zona",
        y = "Proporció") +  
        theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
-
-
 ```
 
 > Tal i com es pot observar al gràfic anterior, la proporció d'habitatges disponibles, ja sigui mitjançant la seva venda o el seu lloguer, és molt reduïda, sobretot a les parròquies més cèntriques.
@@ -350,7 +363,6 @@ ggplot(aux_data, aes(x = Zone, y = Valor, fill = Disponibilitat)) +
 > Alhora, es preten estudiar les distribucions de preus de lloguer i venda de les dues zones definides, i comparar els valors mitjans de les dos grups mitjançant un contrast d'hipòtesi per determinar si el preu a la zona cèntrica és superior.
 
 ```{r message=FALSE, warning=FALSE}
-
 ggplot(venda_data[venda_data$Price < 5000000, ], aes(x = Price, fill = Zone)) +
   geom_histogram(binwidth = 25000, position = "identity", alpha = 0.7) +
   labs(title = "Preus de venda per parròquia",
@@ -364,33 +376,34 @@ ggplot(lloguer_data, aes(x = Price, fill = Zone)) +
        x = "Preu",
        y = "") +
   theme_minimal()
-
 ```
 
 ```{r message=FALSE, warning=FALSE}
 
 habitatges_venda_centrics <- venda_data[venda_data$Centric == 1, ]
 habitatges_venda_no_centrics <- venda_data[venda_data$Centric == 0, ]
-t_test_result_venda <- t.test(habitatges_venda_centrics$Price, habitatges_venda_no_centrics$Price, alternative = "greater")
+t_test_result_venda <- t.test(habitatges_venda_centrics$Price,
+                              habitatges_venda_no_centrics$Price, 
+                              alternative = "greater")
 
 print("El resultat del contrast d'hipòtesis per les ofertes de venda és:")
 print(t_test_result_venda)
 
-
 habitatges_lloguer_centrics <- lloguer_data[lloguer_data$Centric == 1, ]
 habitatges_lloguer_no_centrics <- lloguer_data[lloguer_data$Centric == 0, ]
-t_test_result_lloguer <- t.test(habitatges_lloguer_centrics$Price, habitatges_lloguer_no_centrics$Price, alternative = "greater")
+t_test_result_lloguer <- t.test(habitatges_lloguer_centrics$Price,
+                                habitatges_lloguer_no_centrics$Price, 
+                                alternative = "greater")
 
 print("El resultat del contrast d'hipòtesis per les ofertes de lloguer és:")
 print(t_test_result_lloguer)
-
-
 ```
 
 > Tenint en compte que els p-values obtinguts en ambdós casos són inferiors al nivell de significança, es pot rebutjar còmodament la hipòtesis nul·la i afirmar que, efectivament, els preus mitjans tant de lloguer com de venda són superiors al centre.
 
 ```{r message=FALSE, warning=FALSE}
-correlation_matrix <- cor(venda_data[, c("Price", "Area", "Bedrooms", "Centric")], method = "spearman")
+correlation_matrix <- cor(venda_data[, c("Price", "Area", "Bedrooms", "Centric")],
+                          method = "spearman")
 corrplot(correlation_matrix, method = "color", addCoef.col = "white")
 ```
 
@@ -401,7 +414,8 @@ corrplot(correlation_matrix, method = "color", addCoef.col = "white")
 > Per altra banda, en els pisos de lloguer trobem aquesta casuística:
 
 ```{r message=FALSE, warning=FALSE}
-correlation_matrix <- cor(lloguer_data[, c("Price", "Area", "Bedrooms", "Centric")], method = "spearman")
+correlation_matrix <- cor(lloguer_data[, c("Price", "Area", "Bedrooms", "Centric")], 
+                          method = "spearman")
 corrplot(correlation_matrix, method = "color", addCoef.col = "white")
 ```
 
@@ -437,15 +451,20 @@ dades_combinades <- estadistiques_parroquia %>%
 print(dades_combinades)
 
 # Crear el gràfic
-ggplot(dades_combinades, aes(x = Parròquia, y = Lloguer_Mitja, fill = "Cost Anual Lloguer")) +
+ggplot(dades_combinades, aes(x = Parròquia, y = Lloguer_Mitja, 
+                             fill = "Cost Anual Lloguer")) +
   geom_col() +
-  geom_hline(aes(yintercept = ingressos_anuals), color = "red", linetype = "dashed", size = 1) +
-  geom_text(aes(x = Inf, y = ingressos_anuals, label = "Ingressos Anuals"), color = "red", vjust = -0.5, hjust = 1) +
-  geom_hline(aes(yintercept = ingressos_anuals * 0.35), color = "darkviolet", linetype = "dashed", size = 1) +
-  geom_text(aes(x = Inf, y = ingressos_anuals * 0.35, label = "35% Ingressos"), color = "darkviolet", vjust = -0.5, hjust = 1) +
+  geom_hline(aes(yintercept = ingressos_anuals), color = "red", linetype = "dashed", 
+             size = 1) +
+  geom_text(aes(x = Inf, y = ingressos_anuals, label = "Ingressos Anuals"), 
+            color = "red", vjust = -0.5, hjust = 1) +
+  geom_hline(aes(yintercept = ingressos_anuals * 0.35), color = "darkviolet", 
+             linetype = "dashed", size = 1) +
+  geom_text(aes(x = Inf, y = ingressos_anuals * 0.35, label = "35% Ingressos"),
+            color = "darkviolet", vjust = -0.5, hjust = 1) +
   labs(title = "Lloguer Mitjà Anual vs Ingressos Medians Anuals per Unitat de Consum",
        x = "Parròquia",
-       y = "Preu anual mig del lloguer (€)") +
+       y = "Preu anual mig (€)") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
   scale_fill_manual(values = c("Cost Anual Lloguer" = "lightblue"))
@@ -457,7 +476,7 @@ ggplot(dades_combinades, aes(x = Parròquia, y = Lloguer_Mitja, fill = "Cost Anu
 >
 >Aquesta situació reflecteix una problemàtica d'accessibilitat als habitatges, sobretot a Canillo i Escaldes-Engordany. Per entendre millor com l'àrea, nombre d'habitacions, aparcament i ubicació afecten els preus, s'implementarà un model de regressió lineal per analitzar tant els pisos en venda com els de lloguer.
 
-```{r message=FALSE, warning=FALSE}
+```{r message=FALSE, warning=FALSE, fig.height=3.9}
 realitzar_regressio <- function(df, title="") {
     # Definir variables
     dependent_var <- "Price"
@@ -495,6 +514,10 @@ resultats_venda <- realitzar_regressio(venda_data, "Venda")
 >En l'anàlisi sobre la venda s'observa que un augment en l'àrea i el nombre d'habitacions es correlaciona amb increments en el preu de venda. Algunes zones també tenen un impacte significatiu en el preu de venda. Per exemple, la zona "Ordino" i "Canillo" mostren un impacte positiu significatiu en els preus de venda. L'ajustament global del model de venda és moderat, amb un R2 ajustat d'aproximadament 0.6329, el que suggereix que aproximadament el 63.29% de la variabilitat en el preu de venda es pot explicar pel model.
 >
 >En tots dos casos s'observa que la Zona Sant Julià de Lòria conté valors NA, això podria relacionarse amb una quantitat insuficient de dades.
+>
+>Si s'observen els gràfics de residus, tan en el cas de venta com en el de lloguer s'observa un patró de dispersió irregular, sobretot en el cas dels habitatges en venda. Això indica que no es compleix el supòsit de variança constant en els errors del model, amb lo qual la regressió lineal pot no ser l'ajust més adequat per aquestes dades. Aquest patró també pot indicar que no s'estan considerant variables que podrien resultar rellevants per al model. 
+>
+>En canvi, els QQ plots mostren que les dades s'ajusten bastant bé excepte en les cues, això ens podria indicar que hi ha presencia de valors extrems.
 
 ## Conclusions
 
@@ -502,10 +525,11 @@ resultats_venda <- realitzar_regressio(venda_data, "Venda")
 >
 >Les correlacions indiquen una relació forta entre 'Price' i 'Area', especialment en la venda. La ubicació cèntrica i el nombre d'habitacions també influeixen en els preus, però de manera més moderada. La proporció d'habitatges disponibles és baixa, particularment en les zones cèntriques, destacant una problemàtica social d'accés a l'habitatge. Els estudis de contrast confirmen que els preus mitjans de venda i lloguer són significativament més alts en aquestes zones, evidenciant una major demanda o preferència per aquestes localitzacions. A més, l'anàlisi de regressió subratlla la influència de factors com l'àrea, el nombre d'habitacions, i la ubicació en els preus, mentre que l'anàlisi de càrrega financera dels lloguers mostra que en algunes zones, el cost del lloguer representa una part significativa dels ingressos anuals, posant en evidencia una forta pressió financera sobre els residents. Aquestes troballes proporcionen una comprensió detallada de les dinàmiques del mercat immobiliari andorrà i les seves implicacions socioeconòmiques.
 
-## Generació del fitxer
 
-```{r}
-write.csv(processed_data, file = "dataset/preus_propietats_andorra_dades_finals.csv", row.names = FALSE)
+```{```{r message=FALSE, warning=FALSE}
+# Generació del fitxer de dades net
+output_path <- "dataset/preus_propietats_andorra_dades_finals.csv"
+write.csv(processed_data, file = output_path , row.names = FALSE)
 ```
 
 ## Taula de contribucions
