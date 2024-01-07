@@ -526,7 +526,7 @@ resultats_venda <- realitzar_regressio(venda_data, "Venda")
 >Les correlacions indiquen una relació forta entre 'Price' i 'Area', especialment en la venda. La ubicació cèntrica i el nombre d'habitacions també influeixen en els preus, però de manera més moderada. La proporció d'habitatges disponibles és baixa, particularment en les zones cèntriques, destacant una problemàtica social d'accés a l'habitatge. Els estudis de contrast confirmen que els preus mitjans de venda i lloguer són significativament més alts en aquestes zones, evidenciant una major demanda o preferència per aquestes localitzacions. A més, l'anàlisi de regressió subratlla la influència de factors com l'àrea, el nombre d'habitacions, i la ubicació en els preus, mentre que l'anàlisi de càrrega financera dels lloguers mostra que en algunes zones, el cost del lloguer representa una part significativa dels ingressos anuals, posant en evidencia una forta pressió financera sobre els residents. Aquestes troballes proporcionen una comprensió detallada de les dinàmiques del mercat immobiliari andorrà i les seves implicacions socioeconòmiques.
 
 
-```{```{r message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Generació del fitxer de dades net
 output_path <- "dataset/preus_propietats_andorra_dades_finals.csv"
 write.csv(processed_data, file = output_path , row.names = FALSE)
