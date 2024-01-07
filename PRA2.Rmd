@@ -272,8 +272,7 @@ for (variable in c("Price", "Area", "Bedrooms")) {
 > Els resultats dels tests de Shapiro-Wilk indiquen clarament que les distribucions de les variables 'Price', 'Area' i 'Bedrooms', tant per a propietats en venda com en lloguer, no segueixen una distribució normal, ja que els valors p són extremadament baixos en tots els casos (menors de 0.05).
 > Això implica que per aquestes variables, les dades es desvien significativament d'una distribució normal.
 >
-> A continuació farem una comprovació de la igualtat de variàncies entre les propietats cèntriques i no cèntriques.
-> En aquest cas com les dades no compleixen la condició de normalitat, utilitzarem el test de Fligner-Killeen.
+> A continuació farem una comprovació de la igualtat de variàncies entre les propietats cèntriques i no cèntriques. En aquest cas, com les dades no compleixen la condició de normalitat, utilitzarem el test de Fligner-Killeen.
 
 ```{r message=FALSE, warning=FALSE}
 fligner_test_per_tipus <- function(variable) {
@@ -360,7 +359,7 @@ ggplot(aux_data, aes(x = Zone, y = Valor, fill = Disponibilitat)) +
   labs(title = "Proporció d'habitatges disponibles",
        x = "Zona",
        y = "Proporció") +  
-       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+       theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
 
 
 ```
@@ -447,7 +446,7 @@ ggplot(dades_combinades, aes(x = Parròquia, y = Lloguer_Mitja, fill = "Cost Anu
        x = "Parròquia",
        y = "Preu anual mig del lloguer (€)") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
   scale_fill_manual(values = c("Cost Anual Lloguer" = "lightblue"))
 ```
 
@@ -517,5 +516,6 @@ write.csv(processed_data, file = "dataset/preus_propietats_andorra_dades_finals.
 | Desenvolupament del codi  | Laura Guerra, Àlex Tort |
 | Participació al vídeo     | Laura Guerra, Àlex Tort |
 
-## Repositori Github
-El repositori git associat a aquest projecte és https://github.com/Laura-Guerra/TCVD_PR2
+## Video i repositori Github
+>El repositori git associat a aquest projecte és https://github.com/Laura-Guerra/TCVD_PR2
+>L'enllaç del video és: 
