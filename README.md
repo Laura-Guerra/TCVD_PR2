@@ -1,6 +1,6 @@
 # Pràctica 2 - Tipologia i cicle de vida de les dades
 
-Aquest projecte s'ha realitzat per a l'assignatura Tipologia i cicle de vida de les dades del Màster Universitari en Ciència de Dades de la Universitat Oberta de Catalunya. L’objectiu de la pràctica és aplicar tècniques de web scraping mitjançant Python per tal d’extreure les dades del portal immobiliari pisos.ad, que s’utilitzaran posteriorment per analitzar el mercat immobiliari andorrà des de diferents perspectives. 
+Aquest projecte s'ha realitzat per a l'assignatura Tipologia i cicle de vida de les dades del Màster Universitari en Ciència de Dades de la Universitat Oberta de Catalunya. L’objectiu de la pràctica és analitzar el mercat immobiliari andorrà des de diferents perspectives. 
 
 ## Autors
 Aquest projecte ha estat desenvolupat per:
