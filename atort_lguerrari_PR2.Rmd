@@ -37,6 +37,38 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ------------------------------------------------------------------------
 
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+if (!require("jsonlite")) {
+  install.packages("jsonlite")
+  library(jsonlite)
+}
+if (!require("dplyr")) {
+  install.packages("dplyr")
+  library(dplyr)
+}
+
+if (!require("corrplot")) {
+  install.packages("corrplot")
+  library(corrplot)
+}
+
+if (!require("tidyr")) {
+  install.packages("tidyr")
+  library(tidyr)
+}
+
+if (!require("ggplot2")) {
+  install.packages("ggplot2")
+  library(ggplot2)
+}
+
+if (!require("car")) {
+  install.packages("car")
+  library(car)
+}
+
+```
+
 ## Descripció del dataset
 
 > Durant els últims anys el mercat immobiliari andorrà ha observat un augment notable en la demanda d'habitatges, tant de compra com de lloguer, degut al creixent interès de residents estrangers pel país.
@@ -100,17 +132,6 @@ knitr::opts_chunk$set(echo = TRUE)
 > Per tal de poder donar resposta a les qüestions plantejades anteriorment, i en concret, per tal de determinar la proporció entre l'oferta i el nombre total d'habitatges així com entre el preu dels lloguers i els ingressos medians de la població, es recopilen i s'integren les dades necessàries més recents publicades pel Departament d'Estadística d'Andorra.
 
 ```{r message=FALSE, warning=FALSE}
-
-if (!require("jsonlite")) {
-  install.packages("jsonlite")
-  library(jsonlite)
-}
-if (!require("dplyr")) {
-  install.packages("dplyr")
-  library(dplyr)
-}
-
- 
 hab_parroquia_taula <-jsonlite::fromJSON('https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=2802&DataIniciDades=01%2F01%2F2021%2000%3A00%3A00&DataFiDades=12%2F31%2F2021%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=173&N3=174&DV=2802&Pag=PAG_EstadistiquesDades2802173174&DivTaulaDades_2802_59639_68519-sort=A_Descripcio-asc')
 
 ingressos_medians_taula <-jsonlite::fromJSON('https://sig.govern.ad/SIGDDE.Public/EstadistiquesDades/Grid_TablaDatosEstadisticos?IdDivisio=1500&DataIniciDades=01%2F01%2F2018%2000%3A00%3A00&DataFiDades=12%2F31%2F2020%2000%3A00%3A00&Publicada=True&Validada=True&Idioma=ca&N2=131&N3=132&DV=1500&PublicacionsInici.pageSize=10&PublicacionsInici.page=1&Pag=PAG_EstadistiquesDades1500131132&DivTaulaDades_1500_5093_64590-sort=A_Descripcio-asc')
@@ -137,11 +158,6 @@ preus_propietats_df <- read.csv2(file = url("https://zenodo.org/records/10112197
 > Alhora, també es descarten aquells registres que no tinguin valor per qualsevol variable, exceptuant les variables "Features", per la qual s'imputarà un valor més endavant, o "Agency".
 
 ```{r message=FALSE, warning=FALSE}
-if (!require("tidyr")) {
-  install.packages("tidyr")
-  library(tidyr)
-}
-
 # Es determinen els registers buits
 num_rows_missing <- sum(apply(preus_propietats_df[, !(names(preus_propietats_df) %in% c("Features", "Agency"))], 1, function(row) any(is.na(row))))
 
@@ -174,11 +190,6 @@ processed_data <- process_data(preus_propietats_df)
 > A continuació, es tracten les variables i s'identifiquen i gestionen els valors extrems:
 
 ```{r message=FALSE, warning=FALSE}
-if (!require("ggplot2")) {
-  install.packages("ggplot2")
-  library(ggplot2)
-}
-
 preus_propietats_df$Price <- gsub(" €", "", preus_propietats_df$Price)
 preus_propietats_df$Price <- as.integer(gsub("[^0-9]", "", gsub("\\.", "", preus_propietats_df$Price)))
 preus_propietats_df$Area <- as.integer(gsub(" m2", "", preus_propietats_df$Area))
@@ -234,11 +245,6 @@ preus_propietats_df <- preus_propietats_df %>%
 > Abans de procedir als anàlisis, s'estudia la normalitat i homogeneïtat de la variància:
 
 ```{r message=FALSE, warning=FALSE}
-if (!require("car")) {
-  install.packages("car")
-  library(car)
-}
-
 preus_propietats_df$Centric <- ifelse(preus_propietats_df$Zone %in% c("andorra-la-vella", "escaldes-engordany"), 1, 0)
 
 venda_data <- preus_propietats_df[preus_propietats_df$Type == "venda", ]
@@ -384,11 +390,6 @@ print(t_test_result_lloguer)
 > Tenint en compte que els p-values obtinguts en ambdós casos són inferiors al nivell de significança, es pot rebutjar còmodament la hipòtesis nul·la i afirmar que, efectivament, els preus mitjans tant de lloguer com de venda són superiors al centre.
 
 ```{r message=FALSE, warning=FALSE}
-if (!require("corrplot")) {
-  install.packages("corrplot")
-  library(corrplot)
-}
-
 correlation_matrix <- cor(venda_data[, c("Price", "Area", "Bedrooms", "Centric")], method = "spearman")
 corrplot(correlation_matrix, method = "color", addCoef.col = "white")
 ```
