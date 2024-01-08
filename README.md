@@ -24,6 +24,7 @@ https://www.pisos.ad
 ## Enllaç DOI Zenodo
 
 El dataset resultant del web scraping s'ha publicat a Zenodo amb el DOI https://doi.org/10.5281/zenodo.10112197. 
+
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10112197.svg)](https://doi.org/10.5281/zenodo.10112197)
 
 ## Llicència
