@@ -400,6 +400,8 @@ print(t_test_result_lloguer)
 ```
 
 > Tenint en compte que els p-values obtinguts en ambdós casos són inferiors al nivell de significança, es pot rebutjar còmodament la hipòtesis nul·la i afirmar que, efectivament, els preus mitjans tant de lloguer com de venda són superiors al centre.
+>
+> A continuació calcularem la matriu de correlació associada a les principals variables.
 
 ```{r message=FALSE, warning=FALSE}
 correlation_matrix <- cor(venda_data[, c("Price", "Area", "Bedrooms", "Centric")],
@@ -438,17 +440,19 @@ estadistiques_parroquia <- lloguer_data %>%
   summarise(
     Lloguer_Mitja = mean(Preu_Anual, na.rm = TRUE),
     Mediana_Lloguer = median(Preu_Anual, na.rm = TRUE),
-    Percentatge_Superior_35 = mean(Preu_Anual > ingressos_anuals * 0.35) * 100,
+    Percentatge_Superior_35 = round(mean(Preu_Anual > ingressos_anuals * 0.35) * 100, 1),
     Salaris_Necessaris = mean(Preu_Anual / (ingressos_anuals * 0.35))
   )
 
-# Combinar les dades en una taula per visualització
+# Combinar les dades en una taula
 dades_combinades <- estadistiques_parroquia %>%
   mutate(Parròquia = Zone) %>%
-  select(Parròquia, everything())
+  select(Parròquia, Mediana_Lloguer, Percentatge_Superior_35, 
+         Salaris_Necessaris, Lloguer_Mitja)
 
 # Mostrar la taula combinada
 print(dades_combinades)
+
 
 # Crear el gràfic
 ggplot(dades_combinades, aes(x = Parròquia, y = Lloguer_Mitja, 
@@ -543,4 +547,4 @@ write.csv(processed_data, file = output_path , row.names = FALSE)
 
 ## Video i repositori Github
 > El repositori git associat a aquest projecte és https://github.com/Laura-Guerra/TCVD_PR2
-> L'enllaç del video és: 
+> L'enllaç del video és: https://drive.google.com/file/d/1wyZBqPGslB7olgy_F-JP1twgkhbctQEr/view?usp=sharing
