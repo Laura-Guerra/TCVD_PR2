@@ -7,10 +7,6 @@ Aquest projecte ha estat desenvolupat per:
 * Àlex Tort Martí - atort9@uoc.edu
 * Laura Guerra Rivas - lguerrari@uoc.edu
 
-
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10112197.svg)](https://doi.org/10.5281/zenodo.10112197)
-
 ## Estructura del projecte
 
 El repositori consta de les carpetes següents:
@@ -28,6 +24,7 @@ https://www.pisos.ad
 ## Enllaç DOI Zenodo
 
 El dataset resultant del web scraping s'ha publicat a Zenodo amb el DOI https://doi.org/10.5281/zenodo.10112197. 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10112197.svg)](https://doi.org/10.5281/zenodo.10112197)
 
 ## Llicència
 Aquest projecte està disponible sota la Llicència Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0). 
