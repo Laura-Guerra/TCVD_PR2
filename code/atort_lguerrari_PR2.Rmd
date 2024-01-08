@@ -532,7 +532,7 @@ resultats_venda <- realitzar_regressio(venda_data, "Venda")
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 # Generació del fitxer de dades net
-output_path <- "dataset/preus_propietats_andorra_dades_finals.csv"
+output_path <- "../dataset/preus_propietats_andorra_dades_finals.csv"
 write.csv(processed_data, file = output_path , row.names = FALSE)
 ```
 
